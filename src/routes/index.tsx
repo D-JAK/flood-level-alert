@@ -106,32 +106,17 @@ function Dashboard() {
             {tr("Live dam water levels", "ഡാമുകളുടെ തത്സമയ ജലനിരപ്പ്")}
           </span>
         </h1>
-        <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-          <button
-            type="button"
-            onClick={() => results.forEach((r) => r.refetch())}
-            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 font-medium hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
-            <RefreshCw className={cn("size-3.5", refreshing && "animate-spin")} aria-hidden="true" />
-            <span className={cn(ml && "ml")}>{tr("Refresh", "പുതുക്കുക")}</span>
-          </button>
-          {hydrated && oldestFetch && (
-            <span className={cn(ml && "ml")}>
-              {tr("Fetched", "ലഭിച്ചത്")} {new Date(oldestFetch).toLocaleTimeString()}
-            </span>
-          )}
-        </div>
       </header>
 
       <main className="mx-auto max-w-5xl space-y-5 px-4 pt-4">
-        <OfflineBanner
-          lastFetched={oldestFetch}
-          refreshMs={REFRESH_MS}
-          refreshing={refreshing}
-          onRefresh={() => results.forEach((r) => r.refetch())}
-        />
         {feeds.length > 0 && <StaleFeedBanner feeds={feeds} />}
-        {feeds.length > 0 && <FeedFreshness feeds={feeds} />}
+        {feeds.length > 0 && (
+          <FeedFreshness
+            feeds={feeds}
+            refreshing={refreshing}
+            onRefresh={() => results.forEach((r) => r.refetch())}
+          />
+        )}
         <SachetAlerts />
 
         {results.some((r) => r.isError) && feeds.length === 0 && (
