@@ -9,6 +9,7 @@ import { DamCard } from "@/components/dam/DamCard";
 import { DamTable } from "@/components/dam/DamTable";
 import { DisclaimerBar, FeedFreshness, StaleFeedBanner } from "@/components/dam/bits";
 import { SachetAlerts } from "@/components/dam/SachetAlerts";
+import { OfflineBanner } from "@/components/dam/OfflineBanner";
 import { SiteNav } from "@/components/dam/SiteNav";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -120,6 +121,12 @@ function Dashboard() {
       </header>
 
       <main className="mx-auto max-w-5xl space-y-5 px-4 pt-4">
+        <OfflineBanner
+          lastFetched={oldestFetch}
+          refreshMs={REFRESH_MS}
+          refreshing={refreshing}
+          onRefresh={() => results.forEach((r) => r.refetch())}
+        />
         {feeds.length > 0 && <StaleFeedBanner feeds={feeds} />}
         {feeds.length > 0 && <FeedFreshness feeds={feeds} />}
         <SachetAlerts />
