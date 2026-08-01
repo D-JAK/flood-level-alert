@@ -144,7 +144,7 @@ export default function DamMap({ dams }: { dams: Dam[] }) {
         ))}
         <LocateControl />
       </MapContainer>
-      <div className="pointer-events-none absolute top-3 left-3 z-[500] rounded-lg border border-border bg-card/95 p-2 text-[0.7rem] shadow">
+      <div className="pointer-events-none absolute top-3 right-3 z-[500] rounded-lg border border-border bg-card/95 p-2 text-[0.7rem] shadow">
         {(["RED", "ORANGE", "BLUE", "NORMAL", "UNKNOWN"] as const).map((level) => (
           <p key={level} className="flex items-center gap-1.5">
             <span
