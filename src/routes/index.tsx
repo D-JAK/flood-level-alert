@@ -165,6 +165,57 @@ function Dashboard() {
         )}
         <SachetAlerts />
 
+        {hydrated && (
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card p-3 text-sm">
+            <MapPin className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+            {autoDistrict && district === autoDistrict ? (
+              <>
+                <span className={cn(ml && "ml")}>
+                  {tr(
+                    `Showing dams near you — ${autoDistrict} district`,
+                    `നിങ്ങളുടെ ജില്ലയിലെ ഡാമുകൾ — ${districtMl(autoDistrict)}`,
+                  )}{" "}
+                  ({filtered.length})
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setDistrict("all")}
+                  className={cn("ml-auto rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-accent", ml && "ml")}
+                >
+                  {tr("Show all Kerala", "കേരളം മുഴുവൻ കാണിക്കുക")}
+                </button>
+              </>
+            ) : (
+              <>
+                <span className={cn("text-muted-foreground", ml && "ml")}>
+                  {status === "denied"
+                    ? tr(
+                        "Location permission denied — showing all of Kerala.",
+                        "ലൊക്കേഷൻ അനുവദിച്ചിട്ടില്ല — കേരളം മുഴുവൻ കാണിക്കുന്നു.",
+                      )
+                    : tr(
+                        "Showing all of Kerala. Use your location to see your district first.",
+                        "കേരളം മുഴുവൻ കാണിക്കുന്നു. നിങ്ങളുടെ ജില്ല ആദ്യം കാണാൻ ലൊക്കേഷൻ ഉപയോഗിക്കുക.",
+                      )}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    appliedRef.current = false;
+                    locate();
+                  }}
+                  disabled={status === "asking"}
+                  className={cn("ml-auto rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-accent disabled:opacity-60", ml && "ml")}
+                >
+                  {status === "asking"
+                    ? tr("Locating…", "കണ്ടെത്തുന്നു…")
+                    : tr("Use my location", "എന്റെ ലൊക്കേഷൻ ഉപയോഗിക്കുക")}
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
         {results.some((r) => r.isError) && feeds.length === 0 && (
           <p className={cn("rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive", ml && "ml")}>
             {tr(
@@ -313,6 +364,10 @@ function Dashboard() {
 function bySeverity(a: Dam, b: Dam) {
   const diff = ALERT_META[b.alert].rank - ALERT_META[a.alert].rank;
   return diff !== 0 ? diff : a.name.localeCompare(b.name);
+}
+
+function districtMl(name: string) {
+  return KERALA_DISTRICTS.find((d) => d.name === name)?.ml ?? name;
 }
 
 function SummaryTile({
