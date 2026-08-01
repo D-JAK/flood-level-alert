@@ -51,7 +51,8 @@
   --color-alert-normal: var(--alert-normal);
   --color-alert-stale: var(--alert-stale);
   --font-sans:
-    "Inter", "Noto Sans Malayalam", ui-sans-serif, system-ui, sans-serif;
+    "IBM Plex Sans", "Noto Sans Malayalam", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --color-ring-offset-background: var(--background);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
