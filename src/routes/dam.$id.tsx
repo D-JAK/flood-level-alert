@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import {
@@ -342,7 +342,7 @@ function Tile({
   label: string;
   value: string;
   unit?: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
 }) {
   const { lang } = useLang();
   return (
