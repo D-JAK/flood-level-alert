@@ -3,7 +3,14 @@ import { applyKsebScrape, buildFeedResult, fetchRawFeed, type FeedKey, type Feed
 import { getKsebScrape } from "./kseb.functions";
 import { readCache, writeCache } from "./local-cache";
 
-export const REFRESH_MS = 15 * 60 * 1000;
+/**
+ * Measured cadence of the public feeds (git history of live.json /
+ * irrigation_live.json): one commit per day, published around 05:00–06:00 UTC
+ * after the official bulletin. Polling every 15 min was ~96 wasted fetches a
+ * day, so we check hourly, keep the last payload in localStorage, and serve
+ * that copy until the hour lapses. The Refresh button still forces a fetch.
+ */
+export const REFRESH_MS = 60 * 60 * 1000;
 
 /**
  * KSEB's public mirror sometimes stalls for days. When it does, we ask the
@@ -43,7 +50,10 @@ export const feedQueryOptions = (feed: FeedKey) => {
       return result;
     },
     staleTime: REFRESH_MS,
-    gcTime: 24 * 60 * 60 * 1000,
+    gcTime: 7 * 24 * 60 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     retry: 1,
     ...(cached ? { initialData: cached.data, initialDataUpdatedAt: cached.at } : {}),
   });
