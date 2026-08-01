@@ -12,6 +12,7 @@ import { SachetAlerts } from "@/components/dam/SachetAlerts";
 import { SiteNav } from "@/components/dam/SiteNav";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useHydrated } from "@/lib/use-hydrated";
 import { cn } from "@/lib/utils";
 
 const TITLE = "Kerala Dam Watch — live dam water levels & flood alerts";
@@ -47,7 +48,8 @@ function Dashboard() {
     .filter((d): d is FeedResult => Boolean(d));
   const dams = useMemo(() => feeds.flatMap((f) => f.dams), [feeds]);
   const oldestFetch = feeds.length ? Math.min(...feeds.map((f) => f.fetchedAt)) : null;
-  const refreshing = results.some((r) => r.isFetching);
+  const hydrated = useHydrated();
+  const refreshing = hydrated && results.some((r) => r.isFetching);
 
   const [query, setQuery] = useState("");
   const [district, setDistrict] = useState("all");
@@ -109,7 +111,7 @@ function Dashboard() {
             <RefreshCw className={cn("size-3.5", refreshing && "animate-spin")} aria-hidden="true" />
             <span className={cn(ml && "ml")}>{tr("Refresh", "പുതുക്കുക")}</span>
           </button>
-          {oldestFetch && (
+          {hydrated && oldestFetch && (
             <span className={cn(ml && "ml")}>
               {tr("Fetched", "ലഭിച്ചത്")} {new Date(oldestFetch).toLocaleTimeString()}
             </span>

@@ -8,6 +8,7 @@ import { DisclaimerBar, FeedFreshness, StaleFeedBanner } from "@/components/dam/
 import { SiteNav } from "@/components/dam/SiteNav";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLang } from "@/lib/i18n";
+import { useHydrated } from "@/lib/use-hydrated";
 import { cn } from "@/lib/utils";
 
 const DamMap = lazy(() => import("@/components/dam/DamMap"));
@@ -44,7 +45,8 @@ function MapPage() {
   const feeds = results.map((r) => r.data).filter((d): d is FeedResult => Boolean(d));
   const dams = useMemo(() => feeds.flatMap((f) => f.dams), [feeds]);
   const mapped = dams.filter((d) => d.latitude !== null && d.longitude !== null).length;
-  const refreshing = results.some((r) => r.isFetching);
+  const hydrated = useHydrated();
+  const refreshing = hydrated && results.some((r) => r.isFetching);
   const oldestFetch = feeds.length ? Math.min(...feeds.map((f) => f.fetchedAt)) : null;
 
   return (
@@ -73,7 +75,7 @@ function MapPage() {
               />
               <span className={cn(ml && "ml")}>{tr("Refresh", "പുതുക്കുക")}</span>
             </button>
-            {oldestFetch && (
+            {hydrated && oldestFetch && (
               <span className={cn(ml && "ml")}>
                 {tr("Fetched", "ലഭിച്ചത്")} {new Date(oldestFetch).toLocaleTimeString()}
               </span>

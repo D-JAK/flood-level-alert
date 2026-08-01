@@ -9,6 +9,7 @@ import {
   type FeedResult,
 } from "@/lib/dams";
 import { useBi, useLang } from "@/lib/i18n";
+import { useHydrated } from "@/lib/use-hydrated";
 import { cn } from "@/lib/utils";
 
 export function AlertBadge({ level, className }: { level: AlertLevel; className?: string }) {
@@ -228,9 +229,11 @@ export function FeedFreshness({ feeds }: { feeds: FeedResult[] }) {
               >
                 {ml ? age.ml : age.en}
               </span>
-              <span className={cn("text-muted-foreground", ml && "ml")}>
-                {tr("checked", "പരിശോധിച്ചത്")} {new Date(f.fetchedAt).toLocaleTimeString()}
-              </span>
+              {hydrated && (
+                <span className={cn("text-muted-foreground", ml && "ml")}>
+                  {tr("checked", "പരിശോധിച്ചത്")} {new Date(f.fetchedAt).toLocaleTimeString()}
+                </span>
+              )}
               {f.via === "kseb.in" && (
                 <span className="rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 font-semibold text-primary">
                   dams.kseb.in
