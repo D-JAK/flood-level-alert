@@ -148,13 +148,14 @@ function Dashboard() {
 
       <SiteNav />
 
-      <header className="mx-auto max-w-5xl px-4 pt-5">
+      <header className="mx-auto flex max-w-5xl flex-wrap items-start justify-between gap-3 px-4 pt-5">
         <h1 className={cn("text-2xl font-semibold tracking-tight", ml && "ml")}>
           {tr("Kerala Dam Watch", "കേരള ഡാം വാച്ച്")}
           <span className={cn("block text-base font-medium text-muted-foreground", ml && "ml")}>
             {tr("Live dam water levels", "ഡാമുകളുടെ തത്സമയ ജലനിരപ്പ്")}
           </span>
         </h1>
+        <CurrentTime />
       </header>
 
       <main className="mx-auto max-w-5xl space-y-5 px-4 pt-4">
