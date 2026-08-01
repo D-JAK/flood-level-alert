@@ -51,10 +51,7 @@ export function DamTable({ dams }: { dams: Dam[] }) {
             return (
               <tr
                 key={dam.uid}
-                className={cn(
-                  "flex flex-wrap gap-x-4 gap-y-1 px-3 py-3 sm:table-row sm:px-0",
-                  dam.staleness === "stale" && "opacity-60 grayscale",
-                )}
+                className="flex flex-wrap gap-x-4 gap-y-1 px-3 py-3 sm:table-row sm:px-0"
               >
                 <td className="w-full sm:w-auto sm:px-3 sm:py-2">
                   <span className="font-medium">
