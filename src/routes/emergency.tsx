@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Phone, WifiOff } from "lucide-react";
-import { CONTACT_GROUPS } from "@/lib/emergency-contacts";
+import { ExternalLink, Phone, WifiOff } from "lucide-react";
+import {
+  CONTACT_GROUPS,
+  KSDMA_CONTACT_URL,
+  KSDMA_DIRECTORY_URL,
+} from "@/lib/emergency-contacts";
 import { DisclaimerBar } from "@/components/dam/bits";
 import { SiteNav } from "@/components/dam/SiteNav";
 import { useLang } from "@/lib/i18n";
@@ -49,6 +53,29 @@ function EmergencyPage() {
               )}
             </span>
           </p>
+          <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+            <a
+              href={KSDMA_DIRECTORY_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex items-center gap-1.5 font-semibold text-primary hover:underline"
+            >
+              {tr(
+                "District-wise KSDMA directory (PDF, June 2026)",
+                "ജില്ല തിരിച്ചുള്ള KSDMA ഡയറക്ടറി (PDF, ജൂൺ 2026)",
+              )}
+              <ExternalLink className="size-3" aria-hidden="true" />
+            </a>
+            <a
+              href={KSDMA_CONTACT_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex items-center gap-1.5 font-semibold text-primary hover:underline"
+            >
+              {tr("KSDMA contact page", "KSDMA കോൺടാക്ട് പേജ്")}
+              <ExternalLink className="size-3" aria-hidden="true" />
+            </a>
+          </p>
         </header>
 
         {CONTACT_GROUPS.map((group) => (
@@ -71,7 +98,19 @@ function EmergencyPage() {
                         {ml ? c.ml : c.en}
                       </span>
                       {c.note && (
-                        <span className="block text-[0.7rem] text-muted-foreground">{c.note}</span>
+                        <span
+                          className={cn(
+                            "block text-[0.7rem]",
+                            c.verified ? "text-muted-foreground" : "text-alert-stale",
+                          )}
+                        >
+                          {!c.verified && (
+                            <span className="font-semibold">
+                              {tr("Unconfirmed: ", "സ്ഥിരീകരിച്ചിട്ടില്ല: ")}
+                            </span>
+                          )}
+                          {c.note}
+                        </span>
                       )}
                     </span>
                     <span className="shrink-0 font-mono text-sm font-semibold text-primary">
