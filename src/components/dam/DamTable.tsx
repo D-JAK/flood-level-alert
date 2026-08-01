@@ -1,39 +1,48 @@
 import { fmt, formatAge, type Dam } from "@/lib/dams";
+import { useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { AlertBadge, DamLink, SourceLink, StaleBadge } from "./bits";
 
 export function DamTable({ dams }: { dams: Dam[] }) {
+  const { tr, lang } = useLang();
+  const ml = lang === "ml";
+
   if (dams.length === 0)
     return (
-      <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-        <span className="ml">ഫലങ്ങളില്ല</span> / No dams match these filters.
+      <p
+        className={cn(
+          "rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground",
+          ml && "ml",
+        )}
+      >
+        {tr("No dams match these filters.", "ഈ ഫിൽട്ടറുകൾക്ക് ഫലങ്ങളില്ല.")}
       </p>
     );
+
+  const head = [
+    tr("Dam", "ഡാം"),
+    tr("Level", "ജലനിരപ്പ്"),
+    "FRL",
+    tr("Storage", "സംഭരണം"),
+    tr("Spillway", "ഷട്ടർ"),
+    tr("Status", "സ്ഥിതി"),
+  ];
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
       <table className="w-full text-sm">
-        <caption className="sr-only">Kerala dam water levels</caption>
+        <caption className="sr-only">{tr("Kerala dam water levels", "കേരളത്തിലെ ഡാം ജലനിരപ്പ്")}</caption>
         <thead className="hidden bg-muted/60 text-left text-xs text-muted-foreground sm:table-header-group">
           <tr>
-            <th scope="col" className="px-3 py-2 font-medium">
-              ഡാം / Dam
-            </th>
-            <th scope="col" className="px-3 py-2 text-right font-medium">
-              നിലവാരം / Level
-            </th>
-            <th scope="col" className="px-3 py-2 text-right font-medium">
-              FRL
-            </th>
-            <th scope="col" className="px-3 py-2 text-right font-medium">
-              സംഭരണം / Storage
-            </th>
-            <th scope="col" className="px-3 py-2 text-right font-medium">
-              ഷട്ടർ / Spillway
-            </th>
-            <th scope="col" className="px-3 py-2 font-medium">
-              സ്ഥിതി / Status
-            </th>
+            {head.map((label, i) => (
+              <th
+                key={label}
+                scope="col"
+                className={cn("px-3 py-2 font-medium", i > 0 && i < 5 && "text-right", ml && "ml")}
+              >
+                {label}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -52,14 +61,19 @@ export function DamTable({ dams }: { dams: Dam[] }) {
                     <DamLink dam={dam}>{dam.name}</DamLink>
                   </span>
                   <span className="block text-xs text-muted-foreground">
-                    {dam.district ?? "—"} · {dam.feed === "kseb" ? "KSEB" : "Irrigation"} ·{" "}
+                    {dam.district ?? "—"} ·{" "}
+                    {dam.feed === "kseb" ? tr("KSEB", "കെ.എസ്.ഇ.ബി") : tr("Irrigation", "ജലസേചനം")} ·{" "}
                     {dam.readingDateLabel ?? "—"}
                   </span>
                 </td>
                 <td className="font-mono tabular-nums sm:px-3 sm:py-2 sm:text-right">
-                  <span className="text-muted-foreground sm:hidden">Level </span>
+                  <span className={cn("text-muted-foreground sm:hidden", ml && "ml")}>
+                    {tr("Level", "ജലനിരപ്പ്")}{" "}
+                  </span>
                   {dam.suppressReading ? (
-                    <span className="ml text-xs font-semibold">വിവരം ലഭ്യമല്ല</span>
+                    <span className={cn("text-xs font-semibold", ml && "ml")}>
+                      {tr("No data", "വിവരം ലഭ്യമല്ല")}
+                    </span>
                   ) : (
                     fmt(dam.waterLevel)
                   )}
@@ -81,7 +95,7 @@ export function DamTable({ dams }: { dams: Dam[] }) {
                     <StaleBadge dam={dam} />
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                    <span className="ml">{age.ml}</span>
+                    <span className={cn(ml && "ml")}>{ml ? age.ml : age.en}</span>
                     <SourceLink dam={dam} />
                   </div>
                 </td>
