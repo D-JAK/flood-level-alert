@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "../lib/i18n";
 import { SiteFooter } from "../components/dam/SiteFooter";
 import { AlertMarquee } from "../components/dam/AlertMarquee";
+import { ScrollToTop } from "../components/dam/ScrollToTop";
 
 function NotFoundComponent() {
   return (
@@ -133,6 +134,7 @@ function RootComponent() {
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
         <SiteFooter />
+        <ScrollToTop />
       </LanguageProvider>
     </QueryClientProvider>
   );

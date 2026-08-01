@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, ExternalLink } from "lucide-react";
+import { AlertTriangle, ChevronDown, ExternalLink } from "lucide-react";
 import { sachetQueryOptions, SACHET_REFRESH_MS } from "@/lib/sachet-query";
 import type { SachetAlert } from "@/lib/sachet.server";
 import { wrisQueryOptions, WRIS_REFRESH_MS } from "@/lib/wris-query";
@@ -7,11 +8,10 @@ import { WRIS_URL } from "@/lib/wris.server";
 import { useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 function colorClass(color: string) {
   if (color.includes("red")) return "border-alert-red/50 bg-alert-red/10";
@@ -34,6 +34,7 @@ function relative(ms: number | null, ml: boolean) {
 export function SachetAlerts() {
   const { tr, lang } = useLang();
   const ml = lang === "ml";
+  const [open, setOpen] = useState(true);
   const { data, isPending } = useQuery({
     ...sachetQueryOptions(),
     refetchInterval: SACHET_REFRESH_MS,
@@ -59,76 +60,78 @@ export function SachetAlerts() {
       aria-label="Official alerts from NDMA Sachet"
       className="rounded-xl border border-border bg-card p-3"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className={cn("flex items-center gap-1.5 text-sm font-semibold", ml && "ml")}>
-          <AlertTriangle className="size-4 text-alert-orange" aria-hidden="true" />
-          {tr("Official alerts for Kerala", "കേരളത്തിനുള്ള ഔദ്യോഗിക അലേർട്ടുകൾ")} ({alerts.length})
-        </h2>
-        <a
-          href="https://sachet.ndma.gov.in/"
-          target="_blank"
-          rel="noreferrer noopener"
-          className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-        >
-          NDMA Sachet
-          <ExternalLink className="size-3" aria-hidden="true" />
-        </a>
-      </div>
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <CollapsibleTrigger className="flex flex-1 items-center gap-1.5 text-left text-sm font-semibold hover:opacity-80">
+            <AlertTriangle className="size-4 shrink-0 text-alert-orange" aria-hidden="true" />
+            <span className={cn(ml && "ml")}>
+              {tr("Official alerts for Kerala", "കേരളത്തിനുള്ള ഔദ്യോഗിക അലേർട്ടുകൾ")} (
+              {alerts.length})
+            </span>
+            <ChevronDown
+              className={cn("size-4 shrink-0 transition-transform", open && "rotate-180")}
+              aria-hidden="true"
+            />
+          </CollapsibleTrigger>
+          <a
+            href="https://sachet.ndma.gov.in/"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+          >
+            NDMA Sachet
+            <ExternalLink className="size-3" aria-hidden="true" />
+          </a>
+        </div>
 
-      {alerts.length === 0 ? (
-        <p className={cn("mt-2 text-xs text-muted-foreground", ml && "ml")}>
-          {tr(
-            "No active NDMA alerts for Kerala right now.",
-            "കേരളത്തിന് ഇപ്പോൾ സജീവ അലേർട്ടുകളില്ല.",
+        <CollapsibleContent>
+          {alerts.length === 0 ? (
+            <p className={cn("mt-2 text-xs text-muted-foreground", ml && "ml")}>
+              {tr(
+                "No active NDMA alerts for Kerala right now.",
+                "കേരളത്തിന് ഇപ്പോൾ സജീവ അലേർട്ടുകളില്ല.",
+              )}
+            </p>
+          ) : (
+            <ul className="mt-2 space-y-2">
+              {alerts.map((a) => (
+                <AlertItem key={a.id} alert={a} ml={ml} />
+              ))}
+            </ul>
           )}
-        </p>
-      ) : (
-        <Accordion type="multiple" defaultValue={alerts[0] ? [alerts[0].id] : []} className="mt-2">
-          {alerts.map((a) => (
-            <AlertItem key={a.id} alert={a} ml={ml} />
-          ))}
-        </Accordion>
-      )}
 
-      <WrisNote />
+          <WrisNote />
+        </CollapsibleContent>
+      </Collapsible>
     </section>
   );
 }
 
 function AlertItem({ alert, ml }: { alert: SachetAlert; ml: boolean }) {
   return (
-    <AccordionItem
-      value={alert.id}
-      className={cn("mb-2 rounded-lg border px-2.5 last:border-b", colorClass(alert.severityColor))}
-    >
-      <AccordionTrigger className="py-2 hover:no-underline">
-        <div className="flex w-full flex-col gap-0.5 pr-2 text-left">
-          <span className="text-sm font-semibold">
-            {alert.disasterType}
-            {alert.severityLevel && (
-              <span className="ml-1.5 text-xs font-normal text-muted-foreground">
-                ({alert.severityLevel})
-              </span>
-            )}
+    <li className={cn("rounded-lg border p-2.5", colorClass(alert.severityColor))}>
+      <p className="text-sm font-semibold">
+        {alert.disasterType}
+        {alert.severityLevel && (
+          <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+            ({alert.severityLevel})
           </span>
-          <span className={cn("text-xs font-normal text-muted-foreground", ml && "ml")}>
-            {alert.area || alert.source} · {relative(alert.startMs, ml)}
-          </span>
-        </div>
-      </AccordionTrigger>
-      <AccordionContent className="pb-2.5">
-        {alert.message && (
-          <p className={cn("text-xs leading-relaxed", alert.lang === "ml" && "ml")}>
-            {alert.message}
-          </p>
         )}
-        <p className="mt-1.5 text-[11px] text-muted-foreground">
-          {alert.source}
-          {alert.startsAt ? ` · from ${alert.startsAt}` : ""}
-          {alert.endsAt ? ` · valid till ${alert.endsAt}` : ""}
+      </p>
+      <p className={cn("text-xs text-muted-foreground", ml && "ml")}>
+        {alert.area || alert.source} · {relative(alert.startMs, ml)}
+      </p>
+      {alert.message && (
+        <p className={cn("mt-1.5 text-xs leading-relaxed", alert.lang === "ml" && "ml")}>
+          {alert.message}
         </p>
-      </AccordionContent>
-    </AccordionItem>
+      )}
+      <p className="mt-1.5 text-[11px] text-muted-foreground">
+        {alert.source}
+        {alert.startsAt ? ` · from ${alert.startsAt}` : ""}
+        {alert.endsAt ? ` · valid till ${alert.endsAt}` : ""}
+      </p>
+    </li>
   );
 }
 
