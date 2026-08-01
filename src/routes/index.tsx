@@ -51,6 +51,7 @@ function Dashboard() {
   const [query, setQuery] = useState("");
   const [district, setDistrict] = useState("all");
   const [level, setLevel] = useState<AlertLevel | "all">("all");
+  const [staleOnly, setStaleOnly] = useState(false);
 
   const districts = useMemo(
     () => Array.from(new Set(dams.map((d) => d.district).filter((d): d is string => !!d))).sort(),
@@ -63,9 +64,10 @@ function Dashboard() {
         (d) =>
           (district === "all" || d.district === district) &&
           (level === "all" || d.alert === level) &&
+          (!staleOnly || d.suppressReading || d.staleness !== "fresh") &&
           (query.trim() === "" || d.name.toLowerCase().includes(query.trim().toLowerCase())),
       ),
-    [dams, district, level, query],
+    [dams, district, level, staleOnly, query],
   );
 
   const counts = useMemo(() => {
@@ -127,14 +129,58 @@ function Dashboard() {
         )}
 
         <section aria-label="Summary" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <SummaryTile label={tr("Red alert", "അതീവ ജാഗ്രത")} value={counts.RED} level="RED" />
-          <SummaryTile label={tr("Orange alert", "ജാഗ്രത")} value={counts.ORANGE} level="ORANGE" />
-          <SummaryTile label={tr("Blue alert", "ശ്രദ്ധിക്കുക")} value={counts.BLUE} level="BLUE" />
+          {(["RED", "ORANGE", "BLUE"] as AlertLevel[]).map((l) => (
+            <SummaryTile
+              key={l}
+              label={
+                l === "RED"
+                  ? tr("Red alert", "അതീവ ജാഗ്രത")
+                  : l === "ORANGE"
+                    ? tr("Orange alert", "ജാഗ്രത")
+                    : tr("Blue alert", "ശ്രദ്ധിക്കുക")
+              }
+              value={counts[l as "RED" | "ORANGE" | "BLUE"]}
+              level={l}
+              active={level === l && !staleOnly}
+              onClick={() => {
+                const next = level === l && !staleOnly ? "all" : l;
+                setLevel(next as AlertLevel | "all");
+                setStaleOnly(false);
+                setDistrict("all");
+                setQuery("");
+              }}
+            />
+          ))}
           <SummaryTile
             label={tr("Stale / no data", "പഴയ / ഇല്ലാത്ത വിവരം")}
             value={counts.noData}
+            active={staleOnly}
+            onClick={() => {
+              setStaleOnly((v) => !v);
+              setLevel("all");
+              setDistrict("all");
+              setQuery("");
+            }}
           />
         </section>
+
+        {(level !== "all" || staleOnly) && (
+          <button
+            type="button"
+            onClick={() => {
+              setLevel("all");
+              setStaleOnly(false);
+            }}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 text-xs font-medium hover:bg-accent",
+              ml && "ml",
+            )}
+          >
+            {tr("Showing", "കാണിക്കുന്നത്")}:{" "}
+            {staleOnly ? tr("stale / no data", "പഴയ / ഇല്ലാത്ത വിവരം") : bi(ALERT_META[level as AlertLevel])}{" "}
+            ({filtered.length}) · {tr("clear", "മായ്ക്കുക")}
+          </button>
+        )}
 
         <section aria-label="Filters" className="grid gap-2 sm:grid-cols-3">
           <Input
@@ -179,6 +225,20 @@ function Dashboard() {
           </div>
         ) : (
           <>
+            {level !== "all" || staleOnly ? (
+              filtered.length === 0 ? (
+                <p className={cn("rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground", ml && "ml")}>
+                  {tr("No dams in this category right now.", "ഈ വിഭാഗത്തിൽ ഇപ്പോൾ ഡാമുകളില്ല.")}
+                </p>
+              ) : (
+                <section aria-label="Selected dams" className="space-y-3">
+                  {[...filtered].sort(bySeverity).map((d) => (
+                    <DamCard key={d.uid} dam={d} />
+                  ))}
+                </section>
+              )
+            ) : (
+              <>
             {critical.length > 0 && (
               <section aria-label="Dams on alert" className="space-y-3">
                 <h2 className={cn("text-sm font-semibold text-muted-foreground uppercase", ml && "ml")}>
@@ -195,6 +255,8 @@ function Dashboard() {
               </h2>
               <DamTable dams={rest} />
             </section>
+              </>
+            )}
           </>
         )}
       </main>
@@ -211,21 +273,29 @@ function SummaryTile({
   label,
   value,
   level,
+  active,
+  onClick,
 }: {
   label: string;
   value: number;
   level?: AlertLevel;
+  active?: boolean;
+  onClick?: () => void;
 }) {
   const { lang } = useLang();
   return (
-    <div
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
       className={cn(
-        "rounded-lg border bg-card p-3",
+        "rounded-lg border bg-card p-3 text-left transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         level ? ALERT_META[level].className : "border-border",
+        active && "ring-2 ring-ring",
       )}
     >
       <p className="font-mono text-2xl leading-none font-semibold tabular-nums">{value}</p>
       <p className={cn("mt-1 text-xs font-medium", lang === "ml" && "ml")}>{label}</p>
-    </div>
+    </button>
   );
 }
