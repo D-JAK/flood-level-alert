@@ -22,28 +22,6 @@ export function SiteFooter() {
           <li>
             <a
               className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
-              href="https://github.com/amith-vp/Kerala-Dam-Water-Levels"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              <Github className="size-3.5" aria-hidden="true" />
-              amith-vp/Kerala-Dam-Water-Levels
-            </a>
-          </li>
-          <li>
-            <a
-              className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
-              href="https://github.com/amith-vp"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              {tr("Dataset by Amith VP", "ഡാറ്റാസെറ്റ്: അമിത് വി.പി")}
-              <ExternalLink className="size-3" aria-hidden="true" />
-            </a>
-          </li>
-          <li>
-            <a
-              className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
               href={FEEDS.kseb.source}
               target="_blank"
               rel="noreferrer noopener"

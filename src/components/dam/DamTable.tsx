@@ -21,10 +21,10 @@ export function DamTable({ dams }: { dams: Dam[] }) {
 
   const head = [
     tr("Dam", "ഡാം"),
-    tr("Level", "ജലനിരപ്പ്"),
-    "FRL",
-    tr("Storage", "സംഭരണം"),
-    tr("Spillway", "ഷട്ടർ"),
+    tr("Level (m)", "ജലനിരപ്പ് (m)"),
+    "FRL (m)",
+    tr("Storage (%)", "സംഭരണം (%)"),
+    tr("Spillway (m³/s)", "ഷട്ടർ (m³/s)"),
     tr("Status", "സ്ഥിതി"),
   ];
 
@@ -75,19 +75,37 @@ export function DamTable({ dams }: { dams: Dam[] }) {
                       {tr("No data", "വിവരം ലഭ്യമല്ല")}
                     </span>
                   ) : (
-                    fmt(dam.waterLevel)
+                    <>
+                      {fmt(dam.waterLevel)}
+                      <span className="ml-0.5 text-xs font-normal text-muted-foreground">m</span>
+                    </>
                   )}
                 </td>
                 <td className="font-mono text-muted-foreground tabular-nums sm:px-3 sm:py-2 sm:text-right">
+                  <span className={cn("sm:hidden", ml && "ml")}>{tr("FRL", "FRL")} </span>
                   {fmt(dam.frl)}
+                  <span className="ml-0.5 text-xs font-normal">m</span>
                 </td>
                 <td className="font-mono tabular-nums sm:px-3 sm:py-2 sm:text-right">
+                  <span className={cn("text-muted-foreground sm:hidden", ml && "ml")}>
+                    {tr("Storage", "സംഭരണം")}{" "}
+                  </span>
                   {dam.suppressReading || dam.storagePercentage === null
                     ? "—"
                     : fmt(dam.storagePercentage, "%", 1)}
                 </td>
                 <td className="font-mono tabular-nums sm:px-3 sm:py-2 sm:text-right">
-                  {dam.suppressReading ? "—" : fmt(dam.spillwayRelease)}
+                  <span className={cn("text-muted-foreground sm:hidden", ml && "ml")}>
+                    {tr("Spillway", "ഷട്ടർ")}{" "}
+                  </span>
+                  {dam.suppressReading || dam.spillwayRelease === null ? (
+                    "—"
+                  ) : (
+                    <>
+                      {fmt(dam.spillwayRelease)}
+                      <span className="ml-0.5 text-xs font-normal text-muted-foreground">m³/s</span>
+                    </>
+                  )}
                 </td>
                 <td className="w-full sm:w-auto sm:px-3 sm:py-2">
                   <div className="flex flex-wrap items-center gap-1.5">
