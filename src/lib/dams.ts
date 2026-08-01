@@ -155,11 +155,21 @@ export function computeAlertLevel(
   return "NORMAL";
 }
 
-export function computeStaleness(ageHours: number | null): Staleness {
+/**
+ * Feeds publish one date-only reading per day (taken ~07:00 IST). A reading
+ * dated today is treated as fresh even once the day is >12h old, otherwise
+ * every dam would grey out each afternoon.
+ */
+export function computeStaleness(ageHours: number | null, isToday = false): Staleness {
   if (ageHours === null) return "unknown";
-  if (ageHours < 12) return "fresh";
+  if (isToday || ageHours < 12) return "fresh";
   if (ageHours <= 48) return "stale";
   return "expired";
+}
+
+/** IST calendar day key (YYYY-MM-DD) for a timestamp. */
+export function istDayKey(ms: number): string {
+  return new Date(ms + 5.5 * 3_600_000).toISOString().slice(0, 10);
 }
 
 export function formatAge(ageHours: number | null): { ml: string; en: string } {
@@ -186,7 +196,8 @@ export function normalizeDam(raw: RawDam, feed: FeedKey, now: number): Dam {
   const reading = raw.data?.[0] ?? {};
   const readingDate = parseFeedDate(reading["date"]) ?? null;
   const ageHours = readingDate ? (now - readingDate.getTime()) / 3_600_000 : null;
-  const staleness = computeStaleness(ageHours);
+  const isToday = readingDate ? istDayKey(readingDate.getTime()) === istDayKey(now) : false;
+  const staleness = computeStaleness(ageHours, isToday);
   const suppressReading = staleness === "expired" || staleness === "unknown";
   const waterLevel = parseNum(reading["waterLevel"]);
   const thresholds = {
