@@ -6,6 +6,7 @@ import { feedQueryOptions, REFRESH_MS } from "@/lib/dams-query";
 import type { FeedResult } from "@/lib/dams";
 import { DisclaimerBar, FeedFreshness, StaleFeedBanner } from "@/components/dam/bits";
 import { SiteNav } from "@/components/dam/SiteNav";
+import { OfflineBanner } from "@/components/dam/OfflineBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLang } from "@/lib/i18n";
 import { useHydrated } from "@/lib/use-hydrated";
@@ -84,6 +85,12 @@ function MapPage() {
         </header>
 
         {feeds.length > 0 && <StaleFeedBanner feeds={feeds} />}
+        <OfflineBanner
+          lastFetched={oldestFetch}
+          refreshMs={REFRESH_MS}
+          refreshing={refreshing}
+          onRefresh={() => results.forEach((r) => r.refetch())}
+        />
         {feeds.length > 0 && <FeedFreshness feeds={feeds} />}
 
         {results.some((r) => r.isPending) ? (
