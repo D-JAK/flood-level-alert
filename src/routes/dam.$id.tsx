@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQueries } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import { useQueries, useQuery } from "@tanstack/react-query";
+import { ArrowLeft, ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import {
   CartesianGrid,
   Line,
@@ -12,6 +13,14 @@ import {
   YAxis,
 } from "recharts";
 import { feedQueryOptions, REFRESH_MS } from "@/lib/dams-query";
+import {
+  RANGES,
+  TREND_META,
+  computeTrend,
+  sliceRange,
+  type RangeKey,
+} from "@/lib/dam-history";
+import { damHistoryQueryOptions } from "@/lib/dam-history-query";
 import { fmt, formatAge, type Dam, type FeedResult } from "@/lib/dams";
 import { AlertBadge, DisclaimerBar, NoCurrentData, SourceLink, StaleBadge } from "@/components/dam/bits";
 import { SiteNav } from "@/components/dam/SiteNav";
