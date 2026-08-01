@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { Bell, BellOff, Crosshair, MapPin, RefreshCw } from "lucide-react";
+import { Bell, BellOff, Crosshair, MapPin } from "lucide-react";
 import { feedQueryOptions, REFRESH_MS } from "@/lib/dams-query";
 import { sachetQueryOptions, SACHET_REFRESH_MS } from "@/lib/sachet-query";
 import { ALERT_META, formatAge, type FeedResult } from "@/lib/dams";
@@ -20,8 +20,7 @@ import {
   type NearbyAlert,
 } from "@/lib/nearby";
 import { SiteNav } from "@/components/dam/SiteNav";
-import { DisclaimerBar } from "@/components/dam/bits";
-import { OfflineBanner } from "@/components/dam/OfflineBanner";
+import { DisclaimerBar, FeedFreshness } from "@/components/dam/bits";
 import { cn } from "@/lib/utils";
 
 const TITLE = "Flood Near Me — nearby dam & flood alerts in Kerala";
@@ -149,17 +148,6 @@ function NearbyPage() {
           </button>
           <button
             type="button"
-            onClick={() => {
-              damResults.forEach((r) => r.refetch());
-              sachet.refetch();
-            }}
-            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 font-medium hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
-            <RefreshCw className={cn("size-3.5", refreshing && "animate-spin")} aria-hidden="true" />
-            <span className={cn(ml && "ml")}>{tr("Refresh", "പുതുക്കുക")}</span>
-          </button>
-          <button
-            type="button"
             onClick={toggleNotify}
             className={cn(
               "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 font-medium hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
@@ -193,15 +181,16 @@ function NearbyPage() {
       </header>
 
       <main className="mx-auto max-w-5xl space-y-4 px-4 pt-4">
-        <OfflineBanner
-          lastFetched={oldestFetch}
-          refreshMs={REFRESH_MS}
-          refreshing={refreshing}
-          onRefresh={() => {
-            damResults.forEach((r) => r.refetch());
-            sachet.refetch();
-          }}
-        />
+        {feeds.length > 0 && (
+          <FeedFreshness
+            feeds={feeds}
+            refreshing={refreshing}
+            onRefresh={() => {
+              damResults.forEach((r) => r.refetch());
+              sachet.refetch();
+            }}
+          />
+        )}
 
         {!coords && (
           <p className={cn("rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground", ml && "ml")}>
