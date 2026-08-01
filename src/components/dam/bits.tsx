@@ -196,6 +196,7 @@ export function DamLink({ dam, children }: { dam: Dam; children: React.ReactNode
 export function FeedFreshness({ feeds }: { feeds: FeedResult[] }) {
   const { tr, lang } = useLang();
   const ml = lang === "ml";
+  const hydrated = useHydrated();
   if (feeds.length === 0) return null;
   return (
     <section
