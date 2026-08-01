@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, Clock, ExternalLink, ShieldAlert } from "lucide-react";
+import { AlertTriangle, Clock, ExternalLink, RefreshCw, ShieldAlert } from "lucide-react";
 import {
   ALERT_META,
   FEEDS,
@@ -193,7 +193,15 @@ export function DamLink({ dam, children }: { dam: Dam; children: React.ReactNode
 }
 
 /** Per-feed "last updated" line: bulletin date, age, fetch time and source used. */
-export function FeedFreshness({ feeds }: { feeds: FeedResult[] }) {
+export function FeedFreshness({
+  feeds,
+  refreshing = false,
+  onRefresh,
+}: {
+  feeds: FeedResult[];
+  refreshing?: boolean;
+  onRefresh?: () => void;
+}) {
   const { tr, lang } = useLang();
   const ml = lang === "ml";
   const hydrated = useHydrated();
@@ -203,10 +211,22 @@ export function FeedFreshness({ feeds }: { feeds: FeedResult[] }) {
       aria-label="Feed freshness"
       className="rounded-lg border border-border bg-card p-3 text-xs"
     >
-      <p className={cn("flex items-center gap-1.5 font-semibold text-foreground", ml && "ml")}>
-        <Clock className="size-3.5" aria-hidden="true" />
-        {tr("Last updated per source", "ഓരോ സ്രോതസ്സിന്റെയും അവസാന അപ്ഡേറ്റ്")}
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className={cn("flex items-center gap-1.5 font-semibold text-foreground", ml && "ml")}>
+          <Clock className="size-3.5" aria-hidden="true" />
+          {tr("Last updated per source", "ഓരോ സ്രോതസ്സിന്റെയും അവസാന അപ്ഡേറ്റ്")}
+        </p>
+        {onRefresh && (
+          <button
+            type="button"
+            onClick={onRefresh}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 font-medium hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <RefreshCw className={cn("size-3.5", refreshing && "animate-spin")} aria-hidden="true" />
+            <span className={cn(ml && "ml")}>{tr("Refresh now", "ഉടൻ പുതുക്കുക")}</span>
+          </button>
+        )}
+      </div>
       <ul className="mt-2 space-y-1.5">
         {feeds.map((f) => {
           const age = formatAge(f.ageHours);
@@ -249,8 +269,8 @@ export function FeedFreshness({ feeds }: { feeds: FeedResult[] }) {
       </ul>
       <p className={cn("mt-2 text-[11px] text-muted-foreground", ml && "ml")}>
         {tr(
-          "These bulletins are published once a day, so we check hourly and reuse the copy stored on your device in between. Tap Refresh to force a check.",
-          "ഈ ബുള്ളറ്റിനുകൾ ദിവസത്തിൽ ഒരിക്കൽ മാത്രം പ്രസിദ്ധീകരിക്കുന്നു; അതിനാൽ ഓരോ മണിക്കൂറിലും മാത്രം പരിശോധിക്കുന്നു, ഇടയ്ക്ക് നിങ്ങളുടെ ഉപകരണത്തിൽ സൂക്ഷിച്ച വിവരം ഉപയോഗിക്കുന്നു. ഉടൻ പരിശോധിക്കാൻ 'പുതുക്കുക' അമർത്തുക.",
+          "These bulletins are published once a day, so we check hourly and reuse the stored copy in between. Tap “Refresh now” to force a check.",
+          "ഈ ബുള്ളറ്റിനുകൾ ദിവസത്തിൽ ഒരിക്കൽ മാത്രം പ്രസിദ്ധീകരിക്കുന്നു; അതിനാൽ ഓരോ മണിക്കൂറിലും പരിശോധിക്കുന്നു, ഇടയ്ക്ക് സൂക്ഷിച്ച വിവരം ഉപയോഗിക്കുന്നു. ഉടൻ പരിശോധിക്കാൻ “ഉടൻ പുതുക്കുക” അമർത്തുക.",
         )}
       </p>
     </section>

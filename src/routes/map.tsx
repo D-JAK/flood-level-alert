@@ -1,12 +1,10 @@
 import { lazy, Suspense, useMemo } from "react";
 import { createFileRoute, ClientOnly } from "@tanstack/react-router";
 import { useQueries } from "@tanstack/react-query";
-import { RefreshCw } from "lucide-react";
 import { feedQueryOptions, REFRESH_MS } from "@/lib/dams-query";
 import type { FeedResult } from "@/lib/dams";
 import { DisclaimerBar, FeedFreshness, StaleFeedBanner } from "@/components/dam/bits";
 import { SiteNav } from "@/components/dam/SiteNav";
-import { OfflineBanner } from "@/components/dam/OfflineBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLang } from "@/lib/i18n";
 import { useHydrated } from "@/lib/use-hydrated";
@@ -52,7 +50,6 @@ function MapPage() {
   const dams = useMemo(() => feeds.flatMap((f) => f.dams), [feeds]);
   const mapped = dams.filter((d) => d.latitude !== null && d.longitude !== null).length;
   const refreshing = hydrated && results.some((r) => r.isFetching);
-  const oldestFetch = feeds.length ? Math.min(...feeds.map((f) => f.fetchedAt)) : null;
 
   return (
     <div className="min-h-screen bg-background pb-16">
@@ -68,34 +65,16 @@ function MapPage() {
               ? `${dams.length}-ൽ ${mapped} ഡാമുകൾക്ക് സ്ഥാന വിവരമുണ്ട്. വിശദാംശങ്ങൾക്ക് മാർക്കർ ടാപ്പ് ചെയ്യുക.`
               : `${mapped} of ${dams.length} dams have published coordinates. Tap a marker for details.`}
           </p>
-          <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-            <button
-              type="button"
-              onClick={() => results.forEach((r) => r.refetch())}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 font-medium hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              <RefreshCw
-                className={cn("size-3.5", refreshing && "animate-spin")}
-                aria-hidden="true"
-              />
-              <span className={cn(ml && "ml")}>{tr("Refresh", "പുതുക്കുക")}</span>
-            </button>
-            {hydrated && oldestFetch && (
-              <span className={cn(ml && "ml")}>
-                {tr("Fetched", "ലഭിച്ചത്")} {new Date(oldestFetch).toLocaleTimeString()}
-              </span>
-            )}
-          </div>
         </header>
 
         {feeds.length > 0 && <StaleFeedBanner feeds={feeds} />}
-        <OfflineBanner
-          lastFetched={oldestFetch}
-          refreshMs={REFRESH_MS}
-          refreshing={refreshing}
-          onRefresh={() => results.forEach((r) => r.refetch())}
-        />
-        {feeds.length > 0 && <FeedFreshness feeds={feeds} />}
+        {feeds.length > 0 && (
+          <FeedFreshness
+            feeds={feeds}
+            refreshing={refreshing}
+            onRefresh={() => results.forEach((r) => r.refetch())}
+          />
+        )}
 
         {!hydrated || results.some((r) => r.isPending) ? (
           <MapSkeleton />
