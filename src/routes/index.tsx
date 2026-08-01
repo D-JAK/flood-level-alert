@@ -7,6 +7,7 @@ import { ALERT_META, type AlertLevel, type Dam, type FeedResult } from "@/lib/da
 import { DamCard } from "@/components/dam/DamCard";
 import { DamTable } from "@/components/dam/DamTable";
 import { DisclaimerBar, StaleFeedBanner } from "@/components/dam/bits";
+import { SiteNav } from "@/components/dam/SiteNav";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -82,6 +83,8 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-background pb-16">
       <DisclaimerBar />
+
+      <SiteNav />
 
       <header className="mx-auto max-w-5xl px-4 pt-5">
         <h1 className="text-2xl font-semibold tracking-tight">
