@@ -109,6 +109,17 @@ export function districtShareText(
   return rows.join("\n");
 }
 
-export function whatsappUrl(text: string): string {
-  return `https://wa.me/?text=${encodeURIComponent(text)}`;
+/**
+ * wa.me redirects desktop browsers to api.whatsapp.com, which privacy
+ * browsers (Brave, etc.) block outright. Send desktop users straight to
+ * WhatsApp Web and keep the wa.me deep link for mobile.
+ */
+export function whatsappUrl(text: string, isMobile = true): string {
+  const q = encodeURIComponent(text);
+  return isMobile ? `https://wa.me/?text=${q}` : `https://web.whatsapp.com/send?text=${q}`;
+}
+
+export function isMobileDevice(): boolean {
+  if (typeof navigator === "undefined") return true;
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 }

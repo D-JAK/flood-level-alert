@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Copy, Share2 } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { whatsappUrl } from "@/lib/share";
+import { isMobileDevice, whatsappUrl } from "@/lib/share";
 import {
   Popover,
   PopoverContent,
@@ -24,6 +24,9 @@ export function ShareButton({
   const ml = lang === "ml";
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
+  const [mobile, setMobile] = useState(true);
+
+  useEffect(() => setMobile(isMobileDevice()), []);
 
   const copy = async () => {
     try {
@@ -59,7 +62,7 @@ export function ShareButton({
         </pre>
         <div className="flex gap-2">
           <a
-            href={whatsappUrl(text)}
+            href={whatsappUrl(text, mobile)}
             target="_blank"
             rel="noreferrer"
             onClick={() => setOpen(false)}
@@ -68,7 +71,9 @@ export function ShareButton({
               ml && "ml",
             )}
           >
-            {tr("Send on WhatsApp", "വാട്‌സ്ആപ്പിൽ അയക്കുക")}
+            {mobile
+              ? tr("Send on WhatsApp", "വാട്‌സ്ആപ്പിൽ അയക്കുക")
+              : tr("Send on WhatsApp Web", "വാട്‌സ്ആപ്പ് വെബിൽ അയക്കുക")}
           </a>
           <button
             type="button"
