@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQueries } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { useQueries, useQuery } from "@tanstack/react-query";
+import { ArrowLeft, ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import {
   CartesianGrid,
   Line,
@@ -12,6 +13,14 @@ import {
   YAxis,
 } from "recharts";
 import { feedQueryOptions, REFRESH_MS } from "@/lib/dams-query";
+import {
+  RANGES,
+  TREND_META,
+  computeTrend,
+  sliceRange,
+  type RangeKey,
+} from "@/lib/dam-history";
+import { damHistoryQueryOptions } from "@/lib/dam-history-query";
 import { fmt, formatAge, type Dam, type FeedResult } from "@/lib/dams";
 import { AlertBadge, DisclaimerBar, NoCurrentData, SourceLink, StaleBadge } from "@/components/dam/bits";
 import { SiteNav } from "@/components/dam/SiteNav";
@@ -85,7 +94,15 @@ function DamBody({ dam }: { dam: Dam }) {
   const { tr, lang } = useLang();
   const isMl = lang === "ml";
   const age = formatAge(dam.ageHours);
-  const chartData = dam.history.filter((h) => h.waterLevel !== null);
+  const [range, setRange] = useState<RangeKey>("30d");
+  const historyQuery = useQuery(damHistoryQueryOptions(dam.feed, dam.name));
+  const history = historyQuery.data;
+  const points = history?.ok ? history.points : [];
+  const days = RANGES.find((r) => r.key === range)!.days;
+  const chartData = sliceRange(points, days);
+  const trend = computeTrend(points);
+  const TrendIcon =
+    trend?.direction === "rising" ? ArrowUpRight : trend?.direction === "falling" ? ArrowDownRight : Minus;
 
   return (
     <>
@@ -122,6 +139,31 @@ function DamBody({ dam }: { dam: Dam }) {
         </section>
       )}
 
+      {!dam.suppressReading && (
+        <section className="grid grid-cols-3 gap-2">
+          <Tile
+            label={tr("Inflow", "ഒഴുക്ക്")}
+            value={dam.inflow === null ? "—" : fmt(dam.inflow)}
+            unit={dam.inflow === null ? "" : "m³/s"}
+          />
+          <Tile
+            label={tr("Spillway", "ഷട്ടർ")}
+            value={dam.spillwayRelease === null ? "—" : fmt(dam.spillwayRelease)}
+            unit={dam.spillwayRelease === null ? "" : "m³/s"}
+          />
+          <Tile
+            label={tr("Trend", "പ്രവണത")}
+            value={trend ? (isMl ? TREND_META[trend.direction].ml : TREND_META[trend.direction].en) : "—"}
+            unit={
+              trend
+                ? `${trend.delta > 0 ? "+" : ""}${trend.delta.toFixed(2)} m · ${trend.fromLabel} → ${trend.toLabel}`
+                : tr("needs 2 readings", "2 വായനകൾ വേണം")
+            }
+            icon={trend ? <TrendIcon className="size-4" aria-hidden="true" /> : null}
+          />
+        </section>
+      )}
+
       <section className="rounded-xl border border-border bg-card p-4">
         <h2 className={cn("text-sm font-semibold", isMl && "ml")}>{tr("Details", "വിവരങ്ങൾ")}</h2>
         <dl className="mt-2 grid gap-x-6 sm:grid-cols-2">
@@ -131,6 +173,9 @@ function DamBody({ dam }: { dam: Dam }) {
           <Row ml="ഓറഞ്ച്" en="Orange level" value={fmt(dam.orangeLevel, " m")} />
           <Row ml="ബ്ലൂ" en="Blue level" value={fmt(dam.blueLevel, " m")} />
           <Row ml="റൂൾ ലെവൽ" en="Rule level" value={fmt(dam.ruleLevel, " m")} />
+          {dam.grossStorage !== null && (
+            <Row ml="ആകെ സംഭരണശേഷി" en="Gross storage" value={fmt(dam.grossStorage, " TMC")} />
+          )}
           <Row
             ml="സംഭരണം"
             en="Storage"
@@ -174,14 +219,47 @@ function DamBody({ dam }: { dam: Dam }) {
       </section>
 
       <section className="rounded-xl border border-border bg-card p-4">
-        <h2 className={cn("text-sm font-semibold", isMl && "ml")}>
-          {tr("Water level history", "ജലനിരപ്പ് ചരിത്രം")}
-        </h2>
-        {chartData.length < 2 ? (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className={cn("text-sm font-semibold", isMl && "ml")}>
+            {tr("Water level timeline", "ജലനിരപ്പ് ചരിത്രം")}
+          </h2>
+          <div className="flex gap-1" role="group" aria-label={tr("Range", "കാലയളവ്")}>
+            {RANGES.map((r) => (
+              <button
+                key={r.key}
+                type="button"
+                onClick={() => setRange(r.key)}
+                aria-pressed={range === r.key}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                  range === r.key
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-card text-muted-foreground hover:bg-accent",
+                  isMl && "ml",
+                )}
+              >
+                {isMl ? r.ml : r.en}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className={cn("mt-1 text-xs text-muted-foreground", isMl && "ml")}>
+          {tr(
+            "One reading per day — the official bulletin is published daily.",
+            "ദിവസത്തിൽ ഒരു വായന — ഔദ്യോഗിക ബുള്ളറ്റിൻ ദിവസേന പ്രസിദ്ധീകരിക്കുന്നു.",
+          )}
+        </p>
+        {historyQuery.isPending ? (
+          <Skeleton className="mt-3 h-64 w-full rounded-lg" />
+        ) : chartData.length < 2 ? (
           <p className="mt-2 text-xs text-muted-foreground">
             <span className={cn(isMl && "ml")}>
-              {tr("Not enough history in the feed.", "ചരിത്ര വിവരം ലഭ്യമല്ല.")}
+              {tr(
+                "History source unavailable right now.",
+                "ചരിത്ര വിവരം ഇപ്പോൾ ലഭ്യമല്ല.",
+              )}
             </span>
+            {history && !history.ok && <span className="block font-mono">{history.reason}</span>}
           </p>
         ) : (
           <div className="mt-3 h-64 w-full">
@@ -251,6 +329,32 @@ function Row({ ml, en, value }: { ml: string; en: string; value: string }) {
         <span className={cn(lang === "ml" && "ml")}>{lang === "ml" ? ml : en}</span>
       </dt>
       <dd className="font-mono tabular-nums">{value}</dd>
+    </div>
+  );
+}
+
+function Tile({
+  label,
+  value,
+  unit,
+  icon,
+}: {
+  label: string;
+  value: string;
+  unit?: string;
+  icon?: ReactNode;
+}) {
+  const { lang } = useLang();
+  return (
+    <div className="rounded-xl border border-border bg-card p-3">
+      <p className={cn("flex items-center gap-1 text-xs text-muted-foreground", lang === "ml" && "ml")}>
+        {icon}
+        {label}
+      </p>
+      <p className="mt-1 font-mono text-lg leading-tight font-semibold tabular-nums">{value}</p>
+      {unit && (
+        <p className={cn("text-[0.65rem] text-muted-foreground", lang === "ml" && "ml")}>{unit}</p>
+      )}
     </div>
   );
 }

@@ -37,6 +37,7 @@ export type RawDam = {
   orangeLevel?: string;
   redLevel?: string;
   liveStorageAtFRL?: string;
+  grossStorage?: string;
   latitude?: number;
   longitude?: number;
   data?: RawReading[];
@@ -102,6 +103,8 @@ export type Dam = {
   orangeLevel: number | null;
   redLevel: number | null;
   ruleLevel: number | null;
+  /** gross storage in TMC — published by the Irrigation feed only */
+  grossStorage: number | null;
   latitude: number | null;
   longitude: number | null;
   waterLevel: number | null;
@@ -251,6 +254,7 @@ export function normalizeDam(raw: RawDam, feed: FeedKey, now: number): Dam {
     mwl: parseNum(raw.MWL),
     ...thresholds,
     ruleLevel: parseNum(raw.ruleLevel),
+    grossStorage: parseNum(raw.grossStorage),
     latitude: typeof raw.latitude === "number" ? raw.latitude : null,
     longitude: typeof raw.longitude === "number" ? raw.longitude : null,
     waterLevel,
