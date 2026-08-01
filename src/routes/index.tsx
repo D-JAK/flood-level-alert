@@ -8,6 +8,7 @@ import { useBi, useLang } from "@/lib/i18n";
 import { DamCard } from "@/components/dam/DamCard";
 import { DamTable } from "@/components/dam/DamTable";
 import { DisclaimerBar, FeedFreshness, StaleFeedBanner } from "@/components/dam/bits";
+import { SachetAlerts } from "@/components/dam/SachetAlerts";
 import { SiteNav } from "@/components/dam/SiteNav";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -119,6 +120,7 @@ function Dashboard() {
       <main className="mx-auto max-w-5xl space-y-5 px-4 pt-4">
         {feeds.length > 0 && <StaleFeedBanner feeds={feeds} />}
         {feeds.length > 0 && <FeedFreshness feeds={feeds} />}
+        <SachetAlerts />
 
         {results.some((r) => r.isError) && feeds.length === 0 && (
           <p className={cn("rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive", ml && "ml")}>
