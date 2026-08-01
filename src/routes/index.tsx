@@ -4,6 +4,7 @@ import { useQueries } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
 import { feedQueryOptions, REFRESH_MS } from "@/lib/dams-query";
 import { ALERT_META, type AlertLevel, type Dam, type FeedResult } from "@/lib/dams";
+import { useBi, useLang } from "@/lib/i18n";
 import { DamCard } from "@/components/dam/DamCard";
 import { DamTable } from "@/components/dam/DamTable";
 import { DisclaimerBar, StaleFeedBanner } from "@/components/dam/bits";
@@ -29,6 +30,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
+  const { tr, lang } = useLang();
+  const bi = useBi();
+  const ml = lang === "ml";
   const results = useQueries({
     queries: [
       { ...feedQueryOptions("kseb"), refetchInterval: REFRESH_MS },
@@ -87,11 +91,11 @@ function Dashboard() {
       <SiteNav />
 
       <header className="mx-auto max-w-5xl px-4 pt-5">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          <span className="ml block text-base font-medium text-muted-foreground">
-            കേരളത്തിലെ ഡാം ജലനിരപ്പ്
+        <h1 className={cn("text-2xl font-semibold tracking-tight", ml && "ml")}>
+          {tr("Kerala Dam Watch", "കേരള ഡാം വാച്ച്")}
+          <span className={cn("block text-base font-medium text-muted-foreground", ml && "ml")}>
+            {tr("Live dam water levels", "ഡാമുകളുടെ തത്സമയ ജലനിരപ്പ്")}
           </span>
-          Kerala Dam Watch
         </h1>
         <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
           <button
@@ -100,9 +104,13 @@ function Dashboard() {
             className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 font-medium hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             <RefreshCw className={cn("size-3.5", refreshing && "animate-spin")} aria-hidden="true" />
-            <span className="ml">പുതുക്കുക</span> / Refresh
+            <span className={cn(ml && "ml")}>{tr("Refresh", "പുതുക്കുക")}</span>
           </button>
-          {oldestFetch && <span>Fetched {new Date(oldestFetch).toLocaleTimeString()}</span>}
+          {oldestFetch && (
+            <span className={cn(ml && "ml")}>
+              {tr("Fetched", "ലഭിച്ചത്")} {new Date(oldestFetch).toLocaleTimeString()}
+            </span>
+          )}
         </div>
       </header>
 
@@ -110,24 +118,29 @@ function Dashboard() {
         {feeds.length > 0 && <StaleFeedBanner feeds={feeds} />}
 
         {results.some((r) => r.isError) && feeds.length === 0 && (
-          <p className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
-            <span className="ml">വിവരങ്ങൾ ലഭ്യമല്ല.</span> Could not reach the data feeds. Please
-            retry, or check sdma.kerala.gov.in directly.
+          <p className={cn("rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive", ml && "ml")}>
+            {tr(
+              "Could not reach the data feeds. Please retry, or check sdma.kerala.gov.in directly.",
+              "വിവരങ്ങൾ ലഭ്യമല്ല. വീണ്ടും ശ്രമിക്കുക, അല്ലെങ്കിൽ sdma.kerala.gov.in നേരിട്ട് പരിശോധിക്കുക.",
+            )}
           </p>
         )}
 
         <section aria-label="Summary" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <SummaryTile label="അതീവ ജാഗ്രത" en="Red" value={counts.RED} level="RED" />
-          <SummaryTile label="ജാഗ്രത" en="Orange" value={counts.ORANGE} level="ORANGE" />
-          <SummaryTile label="ശ്രദ്ധിക്കുക" en="Blue" value={counts.BLUE} level="BLUE" />
-          <SummaryTile label="പഴയ / ഇല്ലാത്ത വിവരം" en="Stale / no data" value={counts.noData} />
+          <SummaryTile label={tr("Red alert", "അതീവ ജാഗ്രത")} value={counts.RED} level="RED" />
+          <SummaryTile label={tr("Orange alert", "ജാഗ്രത")} value={counts.ORANGE} level="ORANGE" />
+          <SummaryTile label={tr("Blue alert", "ശ്രദ്ധിക്കുക")} value={counts.BLUE} level="BLUE" />
+          <SummaryTile
+            label={tr("Stale / no data", "പഴയ / ഇല്ലാത്ത വിവരം")}
+            value={counts.noData}
+          />
         </section>
 
         <section aria-label="Filters" className="grid gap-2 sm:grid-cols-3">
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="ഡാം തിരയുക / Search dam"
+            placeholder={tr("Search dam", "ഡാം തിരയുക")}
             aria-label="Search dam by name"
           />
           <select
@@ -136,7 +149,7 @@ function Dashboard() {
             aria-label="Filter by district"
             className="h-9 rounded-md border border-input bg-card px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
-            <option value="all">എല്ലാ ജില്ലകൾ / All districts</option>
+            <option value="all">{tr("All districts", "എല്ലാ ജില്ലകൾ")}</option>
             {districts.map((d) => (
               <option key={d} value={d}>
                 {d}
@@ -149,10 +162,10 @@ function Dashboard() {
             aria-label="Filter by alert level"
             className="h-9 rounded-md border border-input bg-card px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
-            <option value="all">എല്ലാ അലേർട്ടുകൾ / All alert levels</option>
+            <option value="all">{tr("All alert levels", "എല്ലാ അലേർട്ടുകൾ")}</option>
             {(["RED", "ORANGE", "BLUE", "NORMAL", "UNKNOWN"] as AlertLevel[]).map((l) => (
               <option key={l} value={l}>
-                {ALERT_META[l].ml} / {ALERT_META[l].en}
+                {bi(ALERT_META[l])}
               </option>
             ))}
           </select>
@@ -168,8 +181,8 @@ function Dashboard() {
           <>
             {critical.length > 0 && (
               <section aria-label="Dams on alert" className="space-y-3">
-                <h2 className="text-sm font-semibold text-muted-foreground uppercase">
-                  <span className="ml">ജാഗ്രത വേണ്ട ഡാമുകൾ</span> / On alert
+                <h2 className={cn("text-sm font-semibold text-muted-foreground uppercase", ml && "ml")}>
+                  {tr("On alert", "ജാഗ്രത വേണ്ട ഡാമുകൾ")}
                 </h2>
                 {critical.map((d) => (
                   <DamCard key={d.uid} dam={d} />
@@ -177,8 +190,8 @@ function Dashboard() {
               </section>
             )}
             <section aria-label="All dams" className="space-y-2">
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase">
-                <span className="ml">എല്ലാ ഡാമുകൾ</span> / All dams ({rest.length})
+              <h2 className={cn("text-sm font-semibold text-muted-foreground uppercase", ml && "ml")}>
+                {tr("All dams", "എല്ലാ ഡാമുകൾ")} ({rest.length})
               </h2>
               <DamTable dams={rest} />
             </section>
@@ -196,15 +209,14 @@ function bySeverity(a: Dam, b: Dam) {
 
 function SummaryTile({
   label,
-  en,
   value,
   level,
 }: {
   label: string;
-  en: string;
   value: number;
   level?: AlertLevel;
 }) {
+  const { lang } = useLang();
   return (
     <div
       className={cn(
@@ -213,8 +225,7 @@ function SummaryTile({
       )}
     >
       <p className="font-mono text-2xl leading-none font-semibold tabular-nums">{value}</p>
-      <p className="ml mt-1 text-xs font-medium">{label}</p>
-      <p className="text-[0.65rem] opacity-70">{en}</p>
+      <p className={cn("mt-1 text-xs font-medium", lang === "ml" && "ml")}>{label}</p>
     </div>
   );
 }

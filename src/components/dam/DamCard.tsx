@@ -1,9 +1,12 @@
 import { fmt, formatAge, type Dam } from "@/lib/dams";
+import { useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { AlertBadge, DamLink, NoCurrentData, SourceLink, StaleBadge } from "./bits";
 
 export function DamCard({ dam }: { dam: Dam }) {
+  const { tr, lang } = useLang();
   const age = formatAge(dam.ageHours);
+  const ml = lang === "ml";
   return (
     <article
       className={cn(
@@ -17,7 +20,8 @@ export function DamCard({ dam }: { dam: Dam }) {
             <DamLink dam={dam}>{dam.name}</DamLink>
           </h3>
           <p className="text-xs text-muted-foreground">
-            {dam.district ?? "—"} · {dam.feed === "kseb" ? "KSEB" : "Irrigation"}
+            {dam.district ?? "—"} ·{" "}
+            {dam.feed === "kseb" ? tr("KSEB", "കെ.എസ്.ഇ.ബി") : tr("Irrigation", "ജലസേചനം")}
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5">
@@ -38,23 +42,28 @@ export function DamCard({ dam }: { dam: Dam }) {
               <span className="ml-1 text-sm font-normal text-muted-foreground">m</span>
             </p>
             <p className="text-xs text-muted-foreground">
-              FRL {fmt(dam.frl)} m · {dam.storagePercentage !== null ? `${fmt(dam.storagePercentage, "%", 1)}` : "—"}
+              FRL {fmt(dam.frl)} m ·{" "}
+              {dam.storagePercentage !== null ? `${fmt(dam.storagePercentage, "%", 1)}` : "—"}
             </p>
           </div>
           <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
             <div className="flex justify-between border-b border-border/60 py-1">
-              <dt className="ml text-muted-foreground">ഒഴുക്ക് / Inflow</dt>
+              <dt className={cn("text-muted-foreground", ml && "ml")}>
+                {tr("Inflow", "ഒഴുക്ക്")}
+              </dt>
               <dd className="font-mono tabular-nums">{fmt(dam.inflow)}</dd>
             </div>
             <div className="flex justify-between border-b border-border/60 py-1">
-              <dt className="ml text-muted-foreground">ഷട്ടർ / Spillway</dt>
+              <dt className={cn("text-muted-foreground", ml && "ml")}>
+                {tr("Spillway", "ഷട്ടർ")}
+              </dt>
               <dd className="font-mono tabular-nums">{fmt(dam.spillwayRelease)}</dd>
             </div>
           </dl>
           {dam.remarks && <p className="mt-2 text-xs text-foreground/80">{dam.remarks}</p>}
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs text-muted-foreground">
-              <span className="ml">{age.ml}</span> · {age.en} ({dam.readingDateLabel ?? "—"})
+            <p className={cn("text-xs text-muted-foreground", ml && "ml")}>
+              {ml ? age.ml : age.en} ({dam.readingDateLabel ?? "—"})
             </p>
             <SourceLink dam={dam} />
           </div>

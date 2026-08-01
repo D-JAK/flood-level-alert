@@ -14,7 +14,10 @@ import {
 import { feedQueryOptions, REFRESH_MS } from "@/lib/dams-query";
 import { fmt, formatAge, type Dam, type FeedResult } from "@/lib/dams";
 import { AlertBadge, DisclaimerBar, NoCurrentData, SourceLink, StaleBadge } from "@/components/dam/bits";
+import { SiteNav } from "@/components/dam/SiteNav";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLang } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dam/$id")({
   head: () => ({
@@ -36,6 +39,8 @@ export const Route = createFileRoute("/dam/$id")({
 });
 
 function DamDetail() {
+  const { tr, lang } = useLang();
+  const isMl = lang === "ml";
   const { id } = Route.useParams();
   const results = useQueries({
     queries: [
@@ -50,20 +55,21 @@ function DamDetail() {
   return (
     <div className="min-h-screen bg-background pb-16">
       <DisclaimerBar />
-      <main className="mx-auto max-w-3xl space-y-4 px-4 pt-5">
+      <SiteNav />
+      <main className="mx-auto max-w-3xl space-y-4 px-4">
         <Link
           to="/"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
         >
           <ArrowLeft className="size-4" aria-hidden="true" />
-          <span className="ml">എല്ലാ ഡാമുകൾ</span> / All dams
+          <span className={cn(isMl && "ml")}>{tr("All dams", "എല്ലാ ഡാമുകൾ")}</span>
         </Link>
 
         {loading && !dam ? (
           <Skeleton className="h-64 w-full rounded-xl" />
         ) : !dam ? (
           <p className="rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground">
-            <span className="ml">ഈ ഡാം കണ്ടെത്താനായില്ല.</span> Dam not found.
+            <span className={cn(isMl && "ml")}>{tr("Dam not found.", "ഈ ഡാം കണ്ടെത്താനായില്ല.")}</span>
           </p>
         ) : (
           <DamBody dam={dam} />
@@ -74,6 +80,8 @@ function DamDetail() {
 }
 
 function DamBody({ dam }: { dam: Dam }) {
+  const { tr, lang } = useLang();
+  const isMl = lang === "ml";
   const age = formatAge(dam.ageHours);
   const chartData = dam.history.filter((h) => h.waterLevel !== null);
 
@@ -84,7 +92,7 @@ function DamBody({ dam }: { dam: Dam }) {
           <h1 className="text-2xl font-semibold tracking-tight">{dam.name}</h1>
           <p className="text-xs text-muted-foreground">
             {dam.officialName} · {dam.district ?? "—"} ·{" "}
-            {dam.feed === "kseb" ? "KSEB" : "Irrigation"}
+            {dam.feed === "kseb" ? tr("KSEB", "കെ.എസ്.ഇ.ബി") : tr("Irrigation", "ജലസേചനം")}
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5">
@@ -101,15 +109,15 @@ function DamBody({ dam }: { dam: Dam }) {
             {fmt(dam.waterLevel)}
             <span className="ml-1 text-base font-normal text-muted-foreground">m</span>
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            <span className="ml">{age.ml}</span> · {age.en} ({dam.readingDateLabel ?? "—"})
+          <p className={cn("mt-1 text-xs text-muted-foreground", isMl && "ml")}>
+            {isMl ? age.ml : age.en} ({dam.readingDateLabel ?? "—"})
           </p>
           {dam.remarks && <p className="mt-2 text-sm">{dam.remarks}</p>}
         </section>
       )}
 
       <section className="rounded-xl border border-border bg-card p-4">
-        <h2 className="ml text-sm font-semibold">വിവരങ്ങൾ / Details</h2>
+        <h2 className={cn("text-sm font-semibold", isMl && "ml")}>{tr("Details", "വിവരങ്ങൾ")}</h2>
         <dl className="mt-2 grid gap-x-6 sm:grid-cols-2">
           <Row ml="പൂർണ്ണ ജലനിരപ്പ് (FRL)" en="FRL" value={fmt(dam.frl, " m")} />
           <Row ml="പരമാവധി (MWL)" en="MWL" value={fmt(dam.mwl, " m")} />
@@ -148,10 +156,14 @@ function DamBody({ dam }: { dam: Dam }) {
       </section>
 
       <section className="rounded-xl border border-border bg-card p-4">
-        <h2 className="ml text-sm font-semibold">ജലനിരപ്പ് ചരിത്രം / Water level history</h2>
+        <h2 className={cn("text-sm font-semibold", isMl && "ml")}>
+          {tr("Water level history", "ജലനിരപ്പ് ചരിത്രം")}
+        </h2>
         {chartData.length < 2 ? (
           <p className="mt-2 text-xs text-muted-foreground">
-            <span className="ml">ചരിത്ര വിവരം ലഭ്യമല്ല.</span> Not enough history in the feed.
+            <span className={cn(isMl && "ml")}>
+              {tr("Not enough history in the feed.", "ചരിത്ര വിവരം ലഭ്യമല്ല.")}
+            </span>
           </p>
         ) : (
           <div className="mt-3 h-64 w-full">
@@ -214,10 +226,11 @@ function DamBody({ dam }: { dam: Dam }) {
 }
 
 function Row({ ml, en, value }: { ml: string; en: string; value: string }) {
+  const { lang } = useLang();
   return (
     <div className="flex items-baseline justify-between gap-3 border-b border-border/60 py-1.5 text-sm">
       <dt className="text-muted-foreground">
-        <span className="ml">{ml}</span> <span className="text-xs">/ {en}</span>
+        <span className={cn(lang === "ml" && "ml")}>{lang === "ml" ? ml : en}</span>
       </dt>
       <dd className="font-mono tabular-nums">{value}</dd>
     </div>

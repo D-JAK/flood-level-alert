@@ -6,6 +6,8 @@ import type { FeedResult } from "@/lib/dams";
 import { DisclaimerBar, StaleFeedBanner } from "@/components/dam/bits";
 import { SiteNav } from "@/components/dam/SiteNav";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLang } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 const DamMap = lazy(() => import("@/components/dam/DamMap"));
 
@@ -30,6 +32,8 @@ function MapSkeleton() {
 }
 
 function MapPage() {
+  const { tr, lang } = useLang();
+  const ml = lang === "ml";
   const results = useQueries({
     queries: [
       { ...feedQueryOptions("kseb"), refetchInterval: REFRESH_MS },
@@ -46,14 +50,13 @@ function MapPage() {
       <SiteNav />
       <main className="mx-auto max-w-5xl space-y-4 px-4">
         <header>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            <span className="ml block text-base font-medium text-muted-foreground">
-              ഡാം ഭൂപടം
-            </span>
-            Dam map
+          <h1 className={cn("text-2xl font-semibold tracking-tight", ml && "ml")}>
+            {tr("Dam map", "ഡാം ഭൂപടം")}
           </h1>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {mapped} of {dams.length} dams have published coordinates. Tap a marker for details.
+          <p className={cn("mt-1 text-xs text-muted-foreground", ml && "ml")}>
+            {ml
+              ? `${dams.length}-ൽ ${mapped} ഡാമുകൾക്ക് സ്ഥാന വിവരമുണ്ട്. വിശദാംശങ്ങൾക്ക് മാർക്കർ ടാപ്പ് ചെയ്യുക.`
+              : `${mapped} of ${dams.length} dams have published coordinates. Tap a marker for details.`}
           </p>
         </header>
 

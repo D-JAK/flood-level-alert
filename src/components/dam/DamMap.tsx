@@ -6,6 +6,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
 import { LocateFixed, Loader2 } from "lucide-react";
 import { ALERT_META, formatAge, fmt, type Dam } from "@/lib/dams";
+import { useBi, useLang } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 import { AlertBadge, DamLink, StaleBadge } from "@/components/dam/bits";
 
 const KERALA_CENTER: [number, number] = [10.35, 76.6];
@@ -19,6 +21,7 @@ const MARKER_COLOR: Record<string, string> = {
 };
 
 function LocateControl() {
+  const { tr, lang } = useLang();
   const map = useMap();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +29,7 @@ function LocateControl() {
 
   const locate = () => {
     if (!("geolocation" in navigator)) {
-      setError("Location not supported on this device");
+      setError(tr("Location not supported on this device", "ഈ ഉപകരണത്തിൽ ലൊക്കേഷൻ ലഭ്യമല്ല"));
       return;
     }
     setBusy(true);
@@ -48,7 +51,7 @@ function LocateControl() {
       },
       () => {
         setBusy(false);
-        setError("Could not get your location");
+        setError(tr("Could not get your location", "നിങ്ങളുടെ സ്ഥലം കണ്ടെത്താനായില്ല"));
       },
       { enableHighAccuracy: true, timeout: 10000 },
     );
@@ -71,14 +74,15 @@ function LocateControl() {
         ) : (
           <LocateFixed className="size-4" aria-hidden="true" />
         )}
-        <span className="ml">എന്റെ സ്ഥലം</span>
-        <span className="text-xs font-medium opacity-70">Locate me</span>
+        <span className={cn(lang === "ml" && "ml")}>{tr("Locate me", "എന്റെ സ്ഥലം")}</span>
       </button>
     </div>
   );
 }
 
 export default function DamMap({ dams }: { dams: Dam[] }) {
+  const { tr, lang } = useLang();
+  const bi = useBi();
   const located = useMemo(
     () => dams.filter((d) => d.latitude !== null && d.longitude !== null),
     [dams],
@@ -124,16 +128,15 @@ export default function DamMap({ dams }: { dams: Dam[] }) {
                 {dam.district && <p className="text-xs text-muted-foreground">{dam.district}</p>}
                 <AlertBadge level={dam.alert} />
                 {dam.suppressReading ? (
-                  <p className="text-xs">
-                    <span className="ml block font-semibold">നിലവിലെ വിവരം ലഭ്യമല്ല</span>
-                    No current data
+                  <p className={cn("text-xs font-semibold", lang === "ml" && "ml")}>
+                    {tr("No current data", "നിലവിലെ വിവരം ലഭ്യമല്ല")}
                   </p>
                 ) : (
                   <p className="text-xs">
                     <span className="font-semibold">{fmt(dam.waterLevel, " m")}</span>
                     {dam.frl !== null && <> / FRL {fmt(dam.frl, " m")}</>}
                     <span className="block text-muted-foreground">
-                      {formatAge(dam.ageHours).en}
+                      {lang === "ml" ? formatAge(dam.ageHours).ml : formatAge(dam.ageHours).en}
                     </span>
                   </p>
                 )}
@@ -152,8 +155,7 @@ export default function DamMap({ dams }: { dams: Dam[] }) {
               style={{ background: MARKER_COLOR[level] }}
               aria-hidden="true"
             />
-            <span className="ml">{ALERT_META[level].ml}</span>
-            <span className="opacity-60">{ALERT_META[level].en}</span>
+            <span className={cn(lang === "ml" && "ml")}>{bi(ALERT_META[level])}</span>
           </p>
         ))}
       </div>
