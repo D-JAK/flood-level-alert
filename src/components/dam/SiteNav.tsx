@@ -1,11 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { Droplets, Map, PhoneCall } from "lucide-react";
+import { Droplets, Map, Navigation, PhoneCall } from "lucide-react";
 import { LanguageToggle, useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const items = [
   { to: "/", icon: Droplets, ml: "ഡാമുകൾ", en: "Dams" },
   { to: "/map", icon: Map, ml: "ഭൂപടം", en: "Map" },
+  { to: "/nearby", icon: Navigation, ml: "എന്റെ അടുത്ത്", en: "Near me" },
   { to: "/emergency", icon: PhoneCall, ml: "അടിയന്തരം", en: "Emergency" },
 ] as const;
 
