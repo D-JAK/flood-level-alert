@@ -139,6 +139,31 @@ function DamBody({ dam }: { dam: Dam }) {
         </section>
       )}
 
+      {!dam.suppressReading && (
+        <section className="grid grid-cols-3 gap-2">
+          <Tile
+            label={tr("Inflow", "ഒഴുക്ക്")}
+            value={dam.inflow === null ? "—" : fmt(dam.inflow)}
+            unit={dam.inflow === null ? "" : "m³/s"}
+          />
+          <Tile
+            label={tr("Spillway", "ഷട്ടർ")}
+            value={dam.spillwayRelease === null ? "—" : fmt(dam.spillwayRelease)}
+            unit={dam.spillwayRelease === null ? "" : "m³/s"}
+          />
+          <Tile
+            label={tr("Trend", "പ്രവണത")}
+            value={trend ? (isMl ? TREND_META[trend.direction].ml : TREND_META[trend.direction].en) : "—"}
+            unit={
+              trend
+                ? `${trend.delta > 0 ? "+" : ""}${trend.delta.toFixed(2)} m · ${trend.fromLabel} → ${trend.toLabel}`
+                : tr("needs 2 readings", "2 വായനകൾ വേണം")
+            }
+            icon={trend ? <TrendIcon className="size-4" aria-hidden="true" /> : null}
+          />
+        </section>
+      )}
+
       <section className="rounded-xl border border-border bg-card p-4">
         <h2 className={cn("text-sm font-semibold", isMl && "ml")}>{tr("Details", "വിവരങ്ങൾ")}</h2>
         <dl className="mt-2 grid gap-x-6 sm:grid-cols-2">
