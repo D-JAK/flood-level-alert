@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, Clock, ExternalLink, ShieldAlert } from "lucide-react";
+import { AlertTriangle, Clock, ExternalLink, RefreshCw, ShieldAlert } from "lucide-react";
 import {
   ALERT_META,
   FEEDS,
