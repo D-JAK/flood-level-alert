@@ -31,21 +31,18 @@ type Credit = {
 
 const CREDITS: Credit[] = [
   {
+    title: "Daliya Joseph",
+    href: "https://www.linkedin.com/in/daliyajoseph/",
+    icon: "linkedin",
+    what: { en: "Built this app.", ml: "ഈ ആപ്പ് നിർമ്മിച്ചത്." },
+  },
+  {
     title: "Kerala-Dam-Water-Levels — Amith VP",
     href: "https://github.com/amith-vp/Kerala-Dam-Water-Levels",
     icon: "github",
     what: {
       en: "The open dataset this dashboard reads. Amith VP scrapes the official KSEB and Irrigation bulletins and publishes them as live.json / irrigation_live.json. All dam readings here come from this feed.",
       ml: "ഈ ഡാഷ്‌ബോർഡ് ഉപയോഗിക്കുന്ന ഓപ്പൺ ഡാറ്റാസെറ്റ്. അമിത് വി.പി. കെ.എസ്.ഇ.ബി, ജലസേചന ബുള്ളറ്റിനുകൾ ശേഖരിച്ച് live.json ആയി പ്രസിദ്ധീകരിക്കുന്നു. ഇവിടെയുള്ള ജലനിരപ്പ് വിവരങ്ങൾ ഈ ഫീഡിൽ നിന്നാണ്.",
-    },
-  },
-  {
-    title: "Amith VP",
-    href: "https://github.com/amith-vp",
-    icon: "github",
-    what: {
-      en: "Creator and maintainer of the dataset above.",
-      ml: "മേൽപ്പറഞ്ഞ ഡാറ്റാസെറ്റിന്റെ നിർമ്മാതാവ്.",
     },
   },
   {
@@ -87,13 +84,7 @@ const CREDITS: Credit[] = [
     what: { en: "This app's code.", ml: "ഈ ആപ്പിന്റെ കോഡ്." },
   },
   {
-    title: "Daliya Joseph",
-    href: "https://www.linkedin.com/in/daliyajoseph/",
-    icon: "linkedin",
-    what: { en: "Built this app.", ml: "ഈ ആപ്പ് നിർമ്മിച്ചത്." },
-  },
-  {
-    title: "Techypedia",
+    title: "Techiepedia",
     href: "https://chat.whatsapp.com/Ld4pktw8OEh9LvOcdKa2N8",
     icon: "chat",
     what: {
