@@ -8,12 +8,7 @@ export function DamCard({ dam }: { dam: Dam }) {
   const age = formatAge(dam.ageHours);
   const ml = lang === "ml";
   return (
-    <article
-      className={cn(
-        "rounded-xl border border-border bg-card p-4 shadow-sm",
-        dam.staleness === "stale" && "opacity-60 grayscale",
-      )}
-    >
+    <article className="rounded-xl border border-border bg-card p-4 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h3 className="text-lg font-semibold tracking-tight">
