@@ -89,6 +89,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "Kerala Dam Watch" },
+      { name: "twitter:title", content: "Kerala Dam Watch" },
+      { property: "og:description", content: "Live water levels and alert status for dams in Kerala, from official public feeds." },
+      { name: "twitter:description", content: "Live water levels and alert status for dams in Kerala, from official public feeds." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/9be9ab77-f009-4470-8d4b-96d9d9b123a7/id-preview-45d1324f--39371c9b-a1c3-4235-a90a-263b4b773417.lovable.app-1785610031507.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/9be9ab77-f009-4470-8d4b-96d9d9b123a7/id-preview-45d1324f--39371c9b-a1c3-4235-a90a-263b4b773417.lovable.app-1785610031507.png" },
     ],
     links: [
       {
@@ -101,7 +107,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+Malayalam:wght@400;500;600&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
   shellComponent: RootShell,
