@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Megaphone } from "lucide-react";
 import { sachetQueryOptions, SACHET_REFRESH_MS } from "@/lib/sachet-query";
@@ -9,8 +10,10 @@ export function AlertMarquee() {
   const { tr, lang } = useLang();
   const ml = lang === "ml";
   const { data } = useQuery({ ...sachetQueryOptions(), refetchInterval: SACHET_REFRESH_MS });
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-  if (!data?.ok || data.alerts.length === 0) return null;
+  if (!mounted || !data?.ok || data.alerts.length === 0) return null;
   const latest = data.alerts[0]!;
   const text = [latest.disasterType, latest.area, latest.message].filter(Boolean).join(" — ");
 
