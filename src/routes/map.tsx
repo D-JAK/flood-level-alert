@@ -84,6 +84,12 @@ function MapPage() {
         </header>
 
         {feeds.length > 0 && <StaleFeedBanner feeds={feeds} />}
+        <OfflineBanner
+          lastFetched={oldestFetch}
+          refreshMs={REFRESH_MS}
+          refreshing={refreshing}
+          onRefresh={() => results.forEach((r) => r.refetch())}
+        />
         {feeds.length > 0 && <FeedFreshness feeds={feeds} />}
 
         {results.some((r) => r.isPending) ? (
