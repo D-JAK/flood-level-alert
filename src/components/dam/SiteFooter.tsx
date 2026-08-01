@@ -72,7 +72,7 @@ export function SiteFooter() {
               rel="noreferrer noopener"
             >
               <MessageCircle className="size-3.5" aria-hidden="true" />
-              {tr("Join Techypedia", "Techypedia-യിൽ ചേരുക")}
+              {tr("Join Techiepedia", "Techiepedia-യിൽ ചേരുക")}
             </a>
           </li>
           <li>
@@ -86,11 +86,9 @@ export function SiteFooter() {
           </li>
         </ul>
         <p className={cn("pt-1", ml && "ml")}>
-          {tr("Created by a member of ", "നിർമ്മിച്ചത്: ")}
-          <span className="font-semibold text-foreground">Techypedia</span>
           {tr(
-            ". Not an official government service — always follow instructions from KSDMA and your district administration.",
-            " അംഗം. ഇത് സർക്കാരിന്റെ ഔദ്യോഗിക സേവനമല്ല — KSDMA യുടെയും ജില്ലാ ഭരണകൂടത്തിന്റെയും നിർദ്ദേശങ്ങൾ പാലിക്കുക.",
+            "Not an official government service — always follow instructions from KSDMA and your district administration.",
+            "ഇത് സർക്കാരിന്റെ ഔദ്യോഗിക സേവനമല്ല — KSDMA യുടെയും ജില്ലാ ഭരണകൂടത്തിന്റെയും നിർദ്ദേശങ്ങൾ പാലിക്കുക.",
           )}
         </p>
       </div>
