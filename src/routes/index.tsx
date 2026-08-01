@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQueries } from "@tanstack/react-query";
 import { feedQueryOptions, REFRESH_MS } from "@/lib/dams-query";
@@ -13,6 +13,9 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHydrated } from "@/lib/use-hydrated";
 import { cn } from "@/lib/utils";
+import { useGeolocation } from "@/lib/use-geolocation";
+import { damDistrict, KERALA_DISTRICTS, nearestDistrict } from "@/lib/geo";
+import { MapPin } from "lucide-react";
 
 const TITLE = "Kerala Dam Watch — live dam water levels & flood alerts";
 const DESC =
@@ -56,22 +59,68 @@ function Dashboard() {
   const [district, setDistrict] = useState("all");
   const [level, setLevel] = useState<AlertLevel | "all">("all");
   const [staleOnly, setStaleOnly] = useState(false);
+  const [autoDistrict, setAutoDistrict] = useState<string | null>(null);
+
+  // On the very first visit we ask for location once. If it is granted we
+  // default the dashboard to the visitor's district; if it is refused (or the
+  // browser blocks it) nothing changes and the full Kerala dashboard shows.
+  const { coords, status, locate } = useGeolocation();
+  const askedRef = useRef(false);
+  useEffect(() => {
+    if (!hydrated || askedRef.current) return;
+    askedRef.current = true;
+    let cancelled = false;
+    const run = async () => {
+      const asked = window.localStorage.getItem("kdw-loc-asked");
+      let granted = false;
+      try {
+        const perm = await navigator.permissions?.query({ name: "geolocation" as PermissionName });
+        granted = perm?.state === "granted";
+        if (perm?.state === "denied") return;
+      } catch {
+        /* Permissions API unavailable — fall back to the asked-once flag */
+      }
+      if (cancelled) return;
+      if (granted || !asked) {
+        window.localStorage.setItem("kdw-loc-asked", "1");
+        locate();
+      }
+    };
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, locate]);
+
+  const appliedRef = useRef(false);
+  useEffect(() => {
+    if (!coords || appliedRef.current || dams.length === 0) return;
+    appliedRef.current = true;
+    const { district: near } = nearestDistrict(coords);
+    setAutoDistrict(near.name);
+    setDistrict(near.name);
+  }, [coords, dams.length]);
+
+  const damDistricts = useMemo(
+    () => new Map(dams.map((d) => [d.uid, damDistrict(d)?.name ?? null] as const)),
+    [dams],
+  );
 
   const districts = useMemo(
-    () => Array.from(new Set(dams.map((d) => d.district).filter((d): d is string => !!d))).sort(),
-    [dams],
+    () => Array.from(new Set([...damDistricts.values()].filter((d): d is string => !!d))).sort(),
+    [damDistricts],
   );
 
   const filtered = useMemo(
     () =>
       dams.filter(
         (d) =>
-          (district === "all" || d.district === district) &&
+          (district === "all" || damDistricts.get(d.uid) === district) &&
           (level === "all" || d.alert === level) &&
           (!staleOnly || d.suppressReading || d.staleness !== "fresh") &&
           (query.trim() === "" || d.name.toLowerCase().includes(query.trim().toLowerCase())),
       ),
-    [dams, district, level, staleOnly, query],
+    [dams, damDistricts, district, level, staleOnly, query],
   );
 
   const counts = useMemo(() => {
@@ -115,6 +164,57 @@ function Dashboard() {
           />
         )}
         <SachetAlerts />
+
+        {hydrated && (
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card p-3 text-sm">
+            <MapPin className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+            {autoDistrict && district === autoDistrict ? (
+              <>
+                <span className={cn(ml && "ml")}>
+                  {tr(
+                    `Showing dams near you — ${autoDistrict} district`,
+                    `നിങ്ങളുടെ ജില്ലയിലെ ഡാമുകൾ — ${districtMl(autoDistrict)}`,
+                  )}{" "}
+                  ({filtered.length})
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setDistrict("all")}
+                  className={cn("ml-auto rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-accent", ml && "ml")}
+                >
+                  {tr("Show all Kerala", "കേരളം മുഴുവൻ കാണിക്കുക")}
+                </button>
+              </>
+            ) : (
+              <>
+                <span className={cn("text-muted-foreground", ml && "ml")}>
+                  {status === "denied"
+                    ? tr(
+                        "Location permission denied — showing all of Kerala.",
+                        "ലൊക്കേഷൻ അനുവദിച്ചിട്ടില്ല — കേരളം മുഴുവൻ കാണിക്കുന്നു.",
+                      )
+                    : tr(
+                        "Showing all of Kerala. Use your location to see your district first.",
+                        "കേരളം മുഴുവൻ കാണിക്കുന്നു. നിങ്ങളുടെ ജില്ല ആദ്യം കാണാൻ ലൊക്കേഷൻ ഉപയോഗിക്കുക.",
+                      )}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    appliedRef.current = false;
+                    locate();
+                  }}
+                  disabled={status === "asking"}
+                  className={cn("ml-auto rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-accent disabled:opacity-60", ml && "ml")}
+                >
+                  {status === "asking"
+                    ? tr("Locating…", "കണ്ടെത്തുന്നു…")
+                    : tr("Use my location", "എന്റെ ലൊക്കേഷൻ ഉപയോഗിക്കുക")}
+                </button>
+              </>
+            )}
+          </div>
+        )}
 
         {results.some((r) => r.isError) && feeds.length === 0 && (
           <p className={cn("rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive", ml && "ml")}>
@@ -264,6 +364,10 @@ function Dashboard() {
 function bySeverity(a: Dam, b: Dam) {
   const diff = ALERT_META[b.alert].rank - ALERT_META[a.alert].rank;
   return diff !== 0 ? diff : a.name.localeCompare(b.name);
+}
+
+function districtMl(name: string) {
+  return KERALA_DISTRICTS.find((d) => d.name === name)?.ml ?? name;
 }
 
 function SummaryTile({

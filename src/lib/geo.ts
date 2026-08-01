@@ -58,3 +58,19 @@ export function districtsInArea(area: string) {
   const lower = area.toLowerCase();
   return KERALA_DISTRICTS.filter((d) => lower.includes(d.name.toLowerCase()));
 }
+
+/**
+ * District a dam belongs to. The Irrigation feed publishes a district field;
+ * the KSEB feed does not, so for those we fall back to the nearest district
+ * headquarters from the dam's published coordinates (always shown as
+ * "nearest district" in the UI, never as an official district assignment).
+ */
+export function damDistrict(dam: {
+  district: string | null;
+  latitude: number | null;
+  longitude: number | null;
+}): { name: string; exact: boolean } | null {
+  if (dam.district) return { name: dam.district, exact: true };
+  if (dam.latitude === null || dam.longitude === null) return null;
+  return { name: nearestDistrict({ lat: dam.latitude, lng: dam.longitude }).district.name, exact: false };
+}
