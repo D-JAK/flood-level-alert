@@ -332,3 +332,29 @@ function Row({ ml, en, value }: { ml: string; en: string; value: string }) {
     </div>
   );
 }
+
+function Tile({
+  label,
+  value,
+  unit,
+  icon,
+}: {
+  label: string;
+  value: string;
+  unit?: string;
+  icon?: React.ReactNode;
+}) {
+  const { lang } = useLang();
+  return (
+    <div className="rounded-xl border border-border bg-card p-3">
+      <p className={cn("flex items-center gap-1 text-xs text-muted-foreground", lang === "ml" && "ml")}>
+        {icon}
+        {label}
+      </p>
+      <p className="mt-1 font-mono text-lg leading-tight font-semibold tabular-nums">{value}</p>
+      {unit && (
+        <p className={cn("text-[0.65rem] text-muted-foreground", lang === "ml" && "ml")}>{unit}</p>
+      )}
+    </div>
+  );
+}
