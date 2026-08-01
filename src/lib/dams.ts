@@ -254,12 +254,17 @@ export type FeedResult = {
   ageHours: number | null;
   dams: Dam[];
   fetchedAt: number;
+  /** where the readings ultimately came from */
+  via: "feed" | "kseb.in";
+  /** why the fallback was (not) used — shown in the freshness panel */
+  fallbackNote: string | null;
 };
 
-export async function fetchFeed(feed: FeedKey): Promise<FeedResult> {
-  const res = await fetch(FEEDS[feed].url, { cache: "no-store" });
-  if (!res.ok) throw new Error(`${FEEDS[feed].label} feed failed (${res.status})`);
-  const json = (await res.json()) as RawFeed;
+export function buildFeedResult(
+  json: RawFeed,
+  feed: FeedKey,
+  extra: { via?: FeedResult["via"]; fallbackNote?: string | null } = {},
+): FeedResult {
   const now = Date.now();
   const lastUpdate = parseFeedDate(json.lastUpdate);
   return {
@@ -269,7 +274,53 @@ export async function fetchFeed(feed: FeedKey): Promise<FeedResult> {
     ageHours: lastUpdate ? (now - lastUpdate.getTime()) / 3_600_000 : null,
     dams: (json.dams ?? []).map((d) => normalizeDam(d, feed, now)),
     fetchedAt: now,
+    via: extra.via ?? "feed",
+    fallbackNote: extra.fallbackNote ?? null,
   };
+}
+
+export async function fetchRawFeed(feed: FeedKey): Promise<RawFeed> {
+  const res = await fetch(FEEDS[feed].url, { cache: "no-store" });
+  if (!res.ok) throw new Error(`${FEEDS[feed].label} feed failed (${res.status})`);
+  return (await res.json()) as RawFeed;
+}
+
+export async function fetchFeed(feed: FeedKey): Promise<FeedResult> {
+  return buildFeedResult(await fetchRawFeed(feed), feed);
+}
+
+function nameKey(value: string): string {
+  return value.toLowerCase().replace(/dam|reservoir|[^a-z]/g, "");
+}
+
+/**
+ * Overlays scraped dams.kseb.in readings onto the public feed. Returns null
+ * when the scrape is not strictly newer or matches no dam, so the app never
+ * replaces good data with worse.
+ */
+export function applyKsebScrape(
+  json: RawFeed,
+  scrape: { date: string; rows: { name: string; waterLevel: number }[] },
+): RawFeed | null {
+  const scrapedDate = parseFeedDate(scrape.date);
+  const feedDate = parseFeedDate(json.lastUpdate);
+  if (!scrapedDate) return null;
+  if (feedDate && scrapedDate.getTime() <= feedDate.getTime()) return null;
+
+  const byName = new Map(scrape.rows.map((r) => [nameKey(r.name), r.waterLevel]));
+  let applied = 0;
+  const dams = (json.dams ?? []).map((dam) => {
+    const level =
+      byName.get(nameKey(dam.name)) ?? (dam.officialName ? byName.get(nameKey(dam.officialName)) : undefined);
+    if (level === undefined) return dam;
+    applied++;
+    return {
+      ...dam,
+      data: [{ date: scrape.date, waterLevel: String(level) }, ...(dam.data ?? [])],
+    };
+  });
+  if (applied === 0) return null;
+  return { lastUpdate: scrape.date, dams };
 }
 
 export function fmt(value: number | null, unit = "", digits = 2): string {
