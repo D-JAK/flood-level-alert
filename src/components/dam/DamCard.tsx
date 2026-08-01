@@ -42,8 +42,10 @@ export function DamCard({ dam }: { dam: Dam }) {
               <span className="ml-1 text-sm font-normal text-muted-foreground">m</span>
             </p>
             <p className="text-xs text-muted-foreground">
-              FRL {fmt(dam.frl)} m ·{" "}
-              {dam.storagePercentage !== null ? `${fmt(dam.storagePercentage, "%", 1)}` : "—"}
+              FRL {fmt(dam.frl, " m")} ·{" "}
+              {dam.storagePercentage !== null
+                ? `${fmt(dam.storagePercentage, "%", 1)} ${tr("full", "നിറഞ്ഞു")}`
+                : "—"}
             </p>
           </div>
           <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
@@ -51,13 +53,17 @@ export function DamCard({ dam }: { dam: Dam }) {
               <dt className={cn("text-muted-foreground", ml && "ml")}>
                 {tr("Inflow", "ഒഴുക്ക്")}
               </dt>
-              <dd className="font-mono tabular-nums">{fmt(dam.inflow)}</dd>
+              <dd className="font-mono tabular-nums">
+                {dam.inflow === null ? "—" : fmt(dam.inflow, " m³/s")}
+              </dd>
             </div>
             <div className="flex justify-between border-b border-border/60 py-1">
               <dt className={cn("text-muted-foreground", ml && "ml")}>
                 {tr("Spillway", "ഷട്ടർ")}
               </dt>
-              <dd className="font-mono tabular-nums">{fmt(dam.spillwayRelease)}</dd>
+              <dd className="font-mono tabular-nums">
+                {dam.spillwayRelease === null ? "—" : fmt(dam.spillwayRelease, " m³/s")}
+              </dd>
             </div>
           </dl>
           {dam.remarks && <p className="mt-2 text-xs text-foreground/80">{dam.remarks}</p>}
