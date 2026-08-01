@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { applyKsebScrape, buildFeedResult, fetchRawFeed, type FeedKey, type FeedResult } from "./dams";
 import { getKsebScrape } from "./kseb.functions";
+import { readCache, writeCache } from "./local-cache";
 
 export const REFRESH_MS = 15 * 60 * 1000;
 
@@ -32,11 +33,18 @@ async function loadFeed(feed: FeedKey): Promise<FeedResult> {
   }
 }
 
-export const feedQueryOptions = (feed: FeedKey) =>
-  queryOptions({
+export const feedQueryOptions = (feed: FeedKey) => {
+  const cached = readCache<FeedResult>(`dam-feed:${feed}`);
+  return queryOptions({
     queryKey: ["dam-feed", feed],
-    queryFn: () => loadFeed(feed),
+    queryFn: async () => {
+      const result = await loadFeed(feed);
+      writeCache(`dam-feed:${feed}`, result);
+      return result;
+    },
     staleTime: REFRESH_MS,
     gcTime: 24 * 60 * 60 * 1000,
     retry: 1,
+    ...(cached ? { initialData: cached.data, initialDataUpdatedAt: cached.at } : {}),
   });
+};
