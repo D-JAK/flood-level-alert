@@ -3,7 +3,7 @@ import { createFileRoute, ClientOnly } from "@tanstack/react-router";
 import { useQueries } from "@tanstack/react-query";
 import { feedQueryOptions, REFRESH_MS } from "@/lib/dams-query";
 import type { FeedResult } from "@/lib/dams";
-import { DisclaimerBar, StaleFeedBanner } from "@/components/dam/bits";
+import { DisclaimerBar, FeedFreshness, StaleFeedBanner } from "@/components/dam/bits";
 import { SiteNav } from "@/components/dam/SiteNav";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLang } from "@/lib/i18n";
@@ -61,6 +61,7 @@ function MapPage() {
         </header>
 
         {feeds.length > 0 && <StaleFeedBanner feeds={feeds} />}
+        {feeds.length > 0 && <FeedFreshness feeds={feeds} />}
 
         {results.some((r) => r.isPending) ? (
           <MapSkeleton />
