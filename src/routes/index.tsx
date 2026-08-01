@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQueries } from "@tanstack/react-query";
 import { feedQueryOptions, REFRESH_MS } from "@/lib/dams-query";
@@ -13,6 +13,9 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHydrated } from "@/lib/use-hydrated";
 import { cn } from "@/lib/utils";
+import { useGeolocation } from "@/lib/use-geolocation";
+import { damDistrict, KERALA_DISTRICTS, nearestDistrict } from "@/lib/geo";
+import { MapPin } from "lucide-react";
 
 const TITLE = "Kerala Dam Watch — live dam water levels & flood alerts";
 const DESC =
@@ -56,22 +59,68 @@ function Dashboard() {
   const [district, setDistrict] = useState("all");
   const [level, setLevel] = useState<AlertLevel | "all">("all");
   const [staleOnly, setStaleOnly] = useState(false);
+  const [autoDistrict, setAutoDistrict] = useState<string | null>(null);
+
+  // On the very first visit we ask for location once. If it is granted we
+  // default the dashboard to the visitor's district; if it is refused (or the
+  // browser blocks it) nothing changes and the full Kerala dashboard shows.
+  const { coords, status, locate } = useGeolocation();
+  const askedRef = useRef(false);
+  useEffect(() => {
+    if (!hydrated || askedRef.current) return;
+    askedRef.current = true;
+    let cancelled = false;
+    const run = async () => {
+      const asked = window.localStorage.getItem("kdw-loc-asked");
+      let granted = false;
+      try {
+        const perm = await navigator.permissions?.query({ name: "geolocation" as PermissionName });
+        granted = perm?.state === "granted";
+        if (perm?.state === "denied") return;
+      } catch {
+        /* Permissions API unavailable — fall back to the asked-once flag */
+      }
+      if (cancelled) return;
+      if (granted || !asked) {
+        window.localStorage.setItem("kdw-loc-asked", "1");
+        locate();
+      }
+    };
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, locate]);
+
+  const appliedRef = useRef(false);
+  useEffect(() => {
+    if (!coords || appliedRef.current || dams.length === 0) return;
+    appliedRef.current = true;
+    const { district: near } = nearestDistrict(coords);
+    setAutoDistrict(near.name);
+    setDistrict(near.name);
+  }, [coords, dams.length]);
+
+  const damDistricts = useMemo(
+    () => new Map(dams.map((d) => [d.uid, damDistrict(d)?.name ?? null] as const)),
+    [dams],
+  );
 
   const districts = useMemo(
-    () => Array.from(new Set(dams.map((d) => d.district).filter((d): d is string => !!d))).sort(),
-    [dams],
+    () => Array.from(new Set([...damDistricts.values()].filter((d): d is string => !!d))).sort(),
+    [damDistricts],
   );
 
   const filtered = useMemo(
     () =>
       dams.filter(
         (d) =>
-          (district === "all" || d.district === district) &&
+          (district === "all" || damDistricts.get(d.uid) === district) &&
           (level === "all" || d.alert === level) &&
           (!staleOnly || d.suppressReading || d.staleness !== "fresh") &&
           (query.trim() === "" || d.name.toLowerCase().includes(query.trim().toLowerCase())),
       ),
-    [dams, district, level, staleOnly, query],
+    [dams, damDistricts, district, level, staleOnly, query],
   );
 
   const counts = useMemo(() => {
