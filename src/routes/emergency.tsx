@@ -98,7 +98,19 @@ function EmergencyPage() {
                         {ml ? c.ml : c.en}
                       </span>
                       {c.note && (
-                        <span className="block text-[0.7rem] text-muted-foreground">{c.note}</span>
+                        <span
+                          className={cn(
+                            "block text-[0.7rem]",
+                            c.verified ? "text-muted-foreground" : "text-alert-stale",
+                          )}
+                        >
+                          {!c.verified && (
+                            <span className="font-semibold">
+                              {tr("Unconfirmed: ", "സ്ഥിരീകരിച്ചിട്ടില്ല: ")}
+                            </span>
+                          )}
+                          {c.note}
+                        </span>
                       )}
                     </span>
                     <span className="shrink-0 font-mono text-sm font-semibold text-primary">
