@@ -54,6 +54,7 @@ export function damShareText(dam: Dam, lang: Lang): string {
     line(
       "Unofficial aggregator — confirm with KSDMA.",
       "അനൗദ്യോഗിക സമാഹാരം — KSDMA-യുമായി സ്ഥിരീകരിക്കുക.",
+      lang,
     ),
   );
   return rows.join("\n");
@@ -102,6 +103,7 @@ export function districtShareText(
     line(
       "Unofficial aggregator — confirm with KSDMA.",
       "അനൗദ്യോഗിക സമാഹാരം — KSDMA-യുമായി സ്ഥിരീകരിക്കുക.",
+      lang,
     ),
   );
   return rows.join("\n");
