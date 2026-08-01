@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { useGeolocation } from "@/lib/use-geolocation";
 import { damDistrict, KERALA_DISTRICTS, nearestDistrict } from "@/lib/geo";
 import { MapPin } from "lucide-react";
+import { ShareButton } from "@/components/dam/ShareButton";
+import { districtShareText } from "@/lib/share";
 
 const TITLE = "Kerala Dam Watch — live dam water levels & flood alerts";
 const DESC =
@@ -313,6 +315,27 @@ function Dashboard() {
             ))}
           </select>
         </section>
+
+        {hydrated && filtered.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card p-3">
+            <p className={cn("text-xs text-muted-foreground", ml && "ml")}>
+              {district === "all"
+                ? tr(
+                    "Share this Kerala-wide summary with others.",
+                    "കേരളം മുഴുവനുള്ള ഈ സംഗ്രഹം മറ്റുള്ളവർക്ക് അയക്കുക.",
+                  )
+                : tr(
+                    `Share the ${district} district summary with others.`,
+                    `${districtMl(district)} ജില്ലയുടെ സംഗ്രഹം മറ്റുള്ളവർക്ക് അയക്കുക.`,
+                  )}
+            </p>
+            <ShareButton
+              className="ml-auto"
+              label={tr("Share update", "അപ്ഡേറ്റ് പങ്കിടുക")}
+              text={districtShareText(district === "all" ? null : district, filtered, lang)}
+            />
+          </div>
+        )}
 
         {loading && feeds.length === 0 ? (
           <div className="space-y-3">

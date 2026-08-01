@@ -15,6 +15,8 @@ import { feedQueryOptions, REFRESH_MS } from "@/lib/dams-query";
 import { fmt, formatAge, type Dam, type FeedResult } from "@/lib/dams";
 import { AlertBadge, DisclaimerBar, NoCurrentData, SourceLink, StaleBadge } from "@/components/dam/bits";
 import { SiteNav } from "@/components/dam/SiteNav";
+import { ShareButton } from "@/components/dam/ShareButton";
+import { damShareText } from "@/lib/share";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -98,6 +100,10 @@ function DamBody({ dam }: { dam: Dam }) {
         <div className="flex flex-col items-end gap-1.5">
           <AlertBadge level={dam.alert} />
           <StaleBadge dam={dam} />
+          <ShareButton
+            text={damShareText(dam, lang)}
+            label={tr("Share update", "അപ്ഡേറ്റ് പങ്കിടുക")}
+          />
         </div>
       </header>
 
