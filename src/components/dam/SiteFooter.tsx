@@ -1,4 +1,5 @@
-import { ExternalLink, Github, Linkedin, MessageCircle } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Award, ExternalLink, Github, Linkedin, MessageCircle } from "lucide-react";
 import { FEEDS } from "@/lib/dams";
 import { useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -73,6 +74,15 @@ export function SiteFooter() {
               <MessageCircle className="size-3.5" aria-hidden="true" />
               {tr("Join Techypedia", "Techypedia-യിൽ ചേരുക")}
             </a>
+          </li>
+          <li>
+            <Link
+              className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+              to="/credits"
+            >
+              <Award className="size-3.5" aria-hidden="true" />
+              {tr("Credits & data sources", "കടപ്പാട്, ഉറവിടങ്ങൾ")}
+            </Link>
           </li>
         </ul>
         <p className={cn("pt-1", ml && "ml")}>
