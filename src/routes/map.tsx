@@ -97,7 +97,7 @@ function MapPage() {
         />
         {feeds.length > 0 && <FeedFreshness feeds={feeds} />}
 
-        {results.some((r) => r.isPending) ? (
+        {!hydrated || results.some((r) => r.isPending) ? (
           <MapSkeleton />
         ) : (
           <ClientOnly fallback={<MapSkeleton />}>
