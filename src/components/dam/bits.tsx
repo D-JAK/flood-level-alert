@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 export function AlertBadge({ level, className }: { level: AlertLevel; className?: string }) {
   const meta = ALERT_META[level];
   const bi = useBi();
+  const { lang } = useLang();
   return (
     <span
       className={cn(
@@ -23,7 +24,7 @@ export function AlertBadge({ level, className }: { level: AlertLevel; className?
       )}
     >
       <span className={cn("size-2 rounded-full", meta.dot)} aria-hidden="true" />
-      <span className={cn(useLang().lang === "ml" && "ml")}>{bi(meta)}</span>
+      <span className={cn(lang === "ml" && "ml")}>{bi(meta)}</span>
     </span>
   );
 }
