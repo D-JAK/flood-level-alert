@@ -43,13 +43,16 @@ function Dashboard() {
     ],
   });
 
-  const loading = results.some((r) => r.isPending);
-  const feeds = results
-    .map((r) => r.data)
-    .filter((d): d is FeedResult => Boolean(d));
+  const hydrated = useHydrated();
+  // localStorage-seeded initialData exists only on the client, so the first
+  // client render must match the server's loading shell to avoid a hydration
+  // mismatch. Real data appears right after hydration.
+  const loading = !hydrated || results.some((r) => r.isPending);
+  const feeds = hydrated
+    ? results.map((r) => r.data).filter((d): d is FeedResult => Boolean(d))
+    : [];
   const dams = useMemo(() => feeds.flatMap((f) => f.dams), [feeds]);
   const oldestFetch = feeds.length ? Math.min(...feeds.map((f) => f.fetchedAt)) : null;
-  const hydrated = useHydrated();
   const refreshing = hydrated && results.some((r) => r.isFetching);
 
   const [query, setQuery] = useState("");

@@ -43,10 +43,14 @@ function MapPage() {
       { ...feedQueryOptions("irrigation"), refetchInterval: REFRESH_MS },
     ],
   });
-  const feeds = results.map((r) => r.data).filter((d): d is FeedResult => Boolean(d));
+  const hydrated = useHydrated();
+  // Cached initialData is client-only; keep the first client render identical
+  // to the SSR shell.
+  const feeds = hydrated
+    ? results.map((r) => r.data).filter((d): d is FeedResult => Boolean(d))
+    : [];
   const dams = useMemo(() => feeds.flatMap((f) => f.dams), [feeds]);
   const mapped = dams.filter((d) => d.latitude !== null && d.longitude !== null).length;
-  const hydrated = useHydrated();
   const refreshing = hydrated && results.some((r) => r.isFetching);
   const oldestFetch = feeds.length ? Math.min(...feeds.map((f) => f.fetchedAt)) : null;
 
@@ -93,7 +97,7 @@ function MapPage() {
         />
         {feeds.length > 0 && <FeedFreshness feeds={feeds} />}
 
-        {results.some((r) => r.isPending) ? (
+        {!hydrated || results.some((r) => r.isPending) ? (
           <MapSkeleton />
         ) : (
           <ClientOnly fallback={<MapSkeleton />}>
