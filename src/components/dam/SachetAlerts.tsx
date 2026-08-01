@@ -7,6 +7,7 @@ import { wrisQueryOptions, WRIS_REFRESH_MS } from "@/lib/wris-query";
 import { WRIS_URL } from "@/lib/wris.server";
 import { useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { useHydrated } from "@/lib/use-hydrated";
 import {
   Collapsible,
   CollapsibleContent,
@@ -35,12 +36,15 @@ export function SachetAlerts() {
   const { tr, lang } = useLang();
   const ml = lang === "ml";
   const [open, setOpen] = useState(true);
+  // The query is seeded from localStorage, which only exists on the client, so
+  // the first client render must match the server's empty output.
+  const hydrated = useHydrated();
   const { data, isPending } = useQuery({
     ...sachetQueryOptions(),
     refetchInterval: SACHET_REFRESH_MS,
   });
 
-  if (isPending || !data) return null;
+  if (!hydrated || isPending || !data) return null;
 
   if (!data.ok) {
     return (
