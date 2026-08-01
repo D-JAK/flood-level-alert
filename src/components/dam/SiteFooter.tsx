@@ -1,4 +1,4 @@
-import { ExternalLink, Github } from "lucide-react";
+import { ExternalLink, Github, Linkedin, MessageCircle } from "lucide-react";
 import { FEEDS } from "@/lib/dams";
 import { useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -61,6 +61,39 @@ export function SiteFooter() {
             >
               {tr("KSDMA dam levels", "KSDMA ഡാം ലെവൽ")}
               <ExternalLink className="size-3" aria-hidden="true" />
+            </a>
+          </li>
+          <li>
+            <a
+              className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+              href="https://github.com/D-JAK/flood-level-alert"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              <Github className="size-3.5" aria-hidden="true" />
+              {tr("Source code", "സോഴ്സ് കോഡ്")}
+            </a>
+          </li>
+          <li>
+            <a
+              className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+              href="https://www.linkedin.com/in/daliyajoseph/"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              <Linkedin className="size-3.5" aria-hidden="true" />
+              Daliya Joseph
+            </a>
+          </li>
+          <li>
+            <a
+              className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+              href="https://chat.whatsapp.com/Ld4pktw8OEh9LvOcdKa2N8"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              <MessageCircle className="size-3.5" aria-hidden="true" />
+              {tr("Join Techypedia", "Techypedia-യിൽ ചേരുക")}
             </a>
           </li>
         </ul>

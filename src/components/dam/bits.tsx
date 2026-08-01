@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, ExternalLink, ShieldAlert } from "lucide-react";
+import { AlertTriangle, Clock, ExternalLink, ShieldAlert } from "lucide-react";
 import {
   ALERT_META,
   FEEDS,
@@ -188,5 +188,61 @@ export function DamLink({ dam, children }: { dam: Dam; children: React.ReactNode
     >
       {children}
     </Link>
+  );
+}
+
+/** Per-feed "last updated" line: bulletin date, age, fetch time and source used. */
+export function FeedFreshness({ feeds }: { feeds: FeedResult[] }) {
+  const { tr, lang } = useLang();
+  const ml = lang === "ml";
+  if (feeds.length === 0) return null;
+  return (
+    <section
+      aria-label="Feed freshness"
+      className="rounded-lg border border-border bg-card p-3 text-xs"
+    >
+      <p className={cn("flex items-center gap-1.5 font-semibold text-foreground", ml && "ml")}>
+        <Clock className="size-3.5" aria-hidden="true" />
+        {tr("Last updated per source", "ഓരോ സ്രോതസ്സിന്റെയും അവസാന അപ്ഡേറ്റ്")}
+      </p>
+      <ul className="mt-2 space-y-1.5">
+        {feeds.map((f) => {
+          const age = formatAge(f.ageHours);
+          const fresh = f.ageHours !== null && f.ageHours <= 24;
+          return (
+            <li key={f.feed} className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="font-medium text-foreground">
+                {ml ? FEEDS[f.feed].labelMl : FEEDS[f.feed].label}
+              </span>
+              <span className={cn("font-mono tabular-nums", ml && "ml")}>
+                {f.lastUpdateLabel ?? "—"}
+              </span>
+              <span
+                className={cn(
+                  "rounded-full border px-2 py-0.5 font-semibold",
+                  fresh
+                    ? "border-alert-normal/40 bg-alert-normal/12 text-alert-normal"
+                    : "border-alert-stale/50 bg-alert-stale/12 text-alert-stale",
+                  ml && "ml",
+                )}
+              >
+                {ml ? age.ml : age.en}
+              </span>
+              <span className={cn("text-muted-foreground", ml && "ml")}>
+                {tr("checked", "പരിശോധിച്ചത്")} {new Date(f.fetchedAt).toLocaleTimeString()}
+              </span>
+              {f.via === "kseb.in" && (
+                <span className="rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 font-semibold text-primary">
+                  dams.kseb.in
+                </span>
+              )}
+              {f.fallbackNote && f.via !== "kseb.in" && (
+                <span className="text-muted-foreground/80">· {f.fallbackNote}</span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
