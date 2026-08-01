@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { useGeolocation } from "@/lib/use-geolocation";
 import { damDistrict, KERALA_DISTRICTS, nearestDistrict } from "@/lib/geo";
 import { MapPin } from "lucide-react";
+import { ShareButton } from "@/components/dam/ShareButton";
+import { districtShareText } from "@/lib/share";
 
 const TITLE = "Kerala Dam Watch — live dam water levels & flood alerts";
 const DESC =
