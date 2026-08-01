@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Phone, WifiOff } from "lucide-react";
-import { CONTACT_GROUPS } from "@/lib/emergency-contacts";
+import { ExternalLink, Phone, WifiOff } from "lucide-react";
+import {
+  CONTACT_GROUPS,
+  KSDMA_CONTACT_URL,
+  KSDMA_DIRECTORY_URL,
+} from "@/lib/emergency-contacts";
 import { DisclaimerBar } from "@/components/dam/bits";
 import { SiteNav } from "@/components/dam/SiteNav";
 import { useLang } from "@/lib/i18n";
@@ -48,6 +52,29 @@ function EmergencyPage() {
                 "ഈ നമ്പറുകൾ ആപ്പിനുള്ളിൽ സൂക്ഷിച്ചിരിക്കുന്നു. ഇവ സംസ്ഥാനതല പൊതു നമ്പറുകളാണ്; നിങ്ങളുടെ ജില്ലാ കൺട്രോൾ റൂം വ്യത്യസ്തമായിരിക്കാം.",
               )}
             </span>
+          </p>
+          <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+            <a
+              href={KSDMA_DIRECTORY_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex items-center gap-1.5 font-semibold text-primary hover:underline"
+            >
+              {tr(
+                "District-wise KSDMA directory (PDF, June 2026)",
+                "ജില്ല തിരിച്ചുള്ള KSDMA ഡയറക്ടറി (PDF, ജൂൺ 2026)",
+              )}
+              <ExternalLink className="size-3" aria-hidden="true" />
+            </a>
+            <a
+              href={KSDMA_CONTACT_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex items-center gap-1.5 font-semibold text-primary hover:underline"
+            >
+              {tr("KSDMA contact page", "KSDMA കോൺടാക്ട് പേജ്")}
+              <ExternalLink className="size-3" aria-hidden="true" />
+            </a>
           </p>
         </header>
 
