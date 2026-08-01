@@ -247,6 +247,12 @@ export function FeedFreshness({ feeds }: { feeds: FeedResult[] }) {
           );
         })}
       </ul>
+      <p className={cn("mt-2 text-[11px] text-muted-foreground", ml && "ml")}>
+        {tr(
+          "These bulletins are published once a day, so we check hourly and reuse the copy stored on your device in between. Tap Refresh to force a check.",
+          "ഈ ബുള്ളറ്റിനുകൾ ദിവസത്തിൽ ഒരിക്കൽ മാത്രം പ്രസിദ്ധീകരിക്കുന്നു; അതിനാൽ ഓരോ മണിക്കൂറിലും മാത്രം പരിശോധിക്കുന്നു, ഇടയ്ക്ക് നിങ്ങളുടെ ഉപകരണത്തിൽ സൂക്ഷിച്ച വിവരം ഉപയോഗിക്കുന്നു. ഉടൻ പരിശോധിക്കാൻ 'പുതുക്കുക' അമർത്തുക.",
+        )}
+      </p>
     </section>
   );
 }
