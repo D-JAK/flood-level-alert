@@ -153,5 +153,12 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .ml {
+    font-family: "Noto Sans Malayalam", var(--font-sans);
+    line-height: 1.55;
   }
 }
