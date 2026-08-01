@@ -130,16 +130,28 @@ function DamBody({ dam }: { dam: Dam }) {
             en="Storage"
             value={dam.suppressReading ? "—" : fmt(dam.storagePercentage, "%", 1)}
           />
-          <Row ml="ഒഴുക്ക്" en="Inflow" value={dam.suppressReading ? "—" : fmt(dam.inflow)} />
+          <Row
+            ml="ഒഴുക്ക്"
+            en="Inflow"
+            value={dam.suppressReading || dam.inflow === null ? "—" : fmt(dam.inflow, " m³/s")}
+          />
           <Row
             ml="ഷട്ടർ തുറന്ന ഒഴുക്ക്"
             en="Spillway release"
-            value={dam.suppressReading ? "—" : fmt(dam.spillwayRelease)}
+            value={
+              dam.suppressReading || dam.spillwayRelease === null
+                ? "—"
+                : fmt(dam.spillwayRelease, " m³/s")
+            }
           />
           <Row
             ml="ആകെ പുറത്തേക്ക്"
             en="Total outflow"
-            value={dam.suppressReading ? "—" : fmt(dam.totalOutflow)}
+            value={
+              dam.suppressReading || dam.totalOutflow === null
+                ? "—"
+                : fmt(dam.totalOutflow, " m³/s")
+            }
           />
           <Row ml="മഴ" en="Rainfall" value={dam.suppressReading ? "—" : fmt(dam.rainfall, " mm", 1)} />
           <Row
