@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CreditsRouteImport } from './routes/credits'
 import { Route as EmergencyRouteImport } from './routes/emergency'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as DamIdRouteImport } from './routes/dam.$id'
@@ -17,6 +18,11 @@ import { Route as DamIdRouteImport } from './routes/dam.$id'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreditsRoute = CreditsRouteImport.update({
+  id: '/credits',
+  path: '/credits',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmergencyRoute = EmergencyRouteImport.update({
@@ -37,12 +43,14 @@ const DamIdRoute = DamIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/credits': typeof CreditsRoute
   '/emergency': typeof EmergencyRoute
   '/map': typeof MapRoute
   '/dam/$id': typeof DamIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/credits': typeof CreditsRoute
   '/emergency': typeof EmergencyRoute
   '/map': typeof MapRoute
   '/dam/$id': typeof DamIdRoute
@@ -50,20 +58,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/credits': typeof CreditsRoute
   '/emergency': typeof EmergencyRoute
   '/map': typeof MapRoute
   '/dam/$id': typeof DamIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/emergency' | '/map' | '/dam/$id'
+  fullPaths: '/' | '/credits' | '/emergency' | '/map' | '/dam/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/emergency' | '/map' | '/dam/$id'
-  id: '__root__' | '/' | '/emergency' | '/map' | '/dam/$id'
+  to: '/' | '/credits' | '/emergency' | '/map' | '/dam/$id'
+  id: '__root__' | '/' | '/credits' | '/emergency' | '/map' | '/dam/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CreditsRoute: typeof CreditsRoute
   EmergencyRoute: typeof EmergencyRoute
   MapRoute: typeof MapRoute
   DamIdRoute: typeof DamIdRoute
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/credits': {
+      id: '/credits'
+      path: '/credits'
+      fullPath: '/credits'
+      preLoaderRoute: typeof CreditsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/emergency': {
@@ -104,6 +121,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CreditsRoute: CreditsRoute,
   EmergencyRoute: EmergencyRoute,
   MapRoute: MapRoute,
   DamIdRoute: DamIdRoute,

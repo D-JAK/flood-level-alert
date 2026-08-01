@@ -163,3 +163,32 @@
     line-height: 1.55;
   }
 }
+
+/* Sliding ticker for the latest official alert at the top of the site. */
+@keyframes kdw-marquee {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.marquee {
+  display: inline-block;
+  min-width: 100%;
+  animation: kdw-marquee 32s linear infinite;
+}
+
+.marquee:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee {
+    animation: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
