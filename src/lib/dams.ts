@@ -156,13 +156,19 @@ export function computeAlertLevel(
 }
 
 /**
- * Feeds publish one date-only reading per day (taken ~07:00 IST). A reading
- * dated today is treated as fresh even once the day is >12h old, otherwise
- * every dam would grey out each afternoon.
+ * Feeds publish one date-only reading per day (taken ~07:00 IST, published
+ * late morning IST). A reading is "fresh" while it is still the most recent
+ * bulletin that can exist: today's reading always, and yesterday's reading
+ * until today's bulletin is due (~noon IST). Without the second rule every
+ * dam greyed out at IST midnight, hours before a new bulletin exists.
  */
-export function computeStaleness(ageHours: number | null, isToday = false): Staleness {
+export function computeStaleness(
+  ageHours: number | null,
+  isToday = false,
+  isCurrentBulletin = false,
+): Staleness {
   if (ageHours === null) return "unknown";
-  if (isToday || ageHours < 12) return "fresh";
+  if (isToday || isCurrentBulletin || ageHours < 12) return "fresh";
   if (ageHours <= 48) return "stale";
   return "expired";
 }
@@ -170,6 +176,23 @@ export function computeStaleness(ageHours: number | null, isToday = false): Stal
 /** IST calendar day key (YYYY-MM-DD) for a timestamp. */
 export function istDayKey(ms: number): string {
   return new Date(ms + 5.5 * 3_600_000).toISOString().slice(0, 10);
+}
+
+/** IST hour (0-23) for a timestamp. */
+export function istHour(ms: number): number {
+  return new Date(ms + 5.5 * 3_600_000).getUTCHours();
+}
+
+/** Hour of day (IST) by which the daily bulletin is normally published. */
+const BULLETIN_DUE_IST_HOUR = 12;
+
+/**
+ * True when a reading dated yesterday (IST) is still the latest bulletin that
+ * can exist, i.e. today's bulletin is not due yet.
+ */
+export function isCurrentBulletin(readingMs: number, now: number): boolean {
+  const yesterday = istDayKey(now - 24 * 3_600_000);
+  return istDayKey(readingMs) === yesterday && istHour(now) < BULLETIN_DUE_IST_HOUR;
 }
 
 export function formatAge(ageHours: number | null): { ml: string; en: string } {
@@ -197,7 +220,8 @@ export function normalizeDam(raw: RawDam, feed: FeedKey, now: number): Dam {
   const readingDate = parseFeedDate(reading["date"]) ?? null;
   const ageHours = readingDate ? (now - readingDate.getTime()) / 3_600_000 : null;
   const isToday = readingDate ? istDayKey(readingDate.getTime()) === istDayKey(now) : false;
-  const staleness = computeStaleness(ageHours, isToday);
+  const current = readingDate ? isCurrentBulletin(readingDate.getTime(), now) : false;
+  const staleness = computeStaleness(ageHours, isToday, current);
   const suppressReading = staleness === "expired" || staleness === "unknown";
   const waterLevel = parseNum(reading["waterLevel"]);
   const thresholds = {
