@@ -67,7 +67,6 @@ function NearbyPage() {
     ? damResults.map((r) => r.data).filter((d): d is FeedResult => Boolean(d))
     : [];
   const dams = useMemo(() => feeds.flatMap((f) => f.dams), [feeds]);
-  const oldestFetch = feeds.length ? Math.min(...feeds.map((f) => f.fetchedAt)) : null;
   const refreshing = hydrated && (damResults.some((r) => r.isFetching) || sachet.isFetching);
 
   const alerts = hydrated && sachet.data?.ok ? sachet.data.alerts : [];

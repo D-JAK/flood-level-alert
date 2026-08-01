@@ -1,12 +1,10 @@
 import { lazy, Suspense, useMemo } from "react";
 import { createFileRoute, ClientOnly } from "@tanstack/react-router";
 import { useQueries } from "@tanstack/react-query";
-import { RefreshCw } from "lucide-react";
 import { feedQueryOptions, REFRESH_MS } from "@/lib/dams-query";
 import type { FeedResult } from "@/lib/dams";
 import { DisclaimerBar, FeedFreshness, StaleFeedBanner } from "@/components/dam/bits";
 import { SiteNav } from "@/components/dam/SiteNav";
-import { OfflineBanner } from "@/components/dam/OfflineBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLang } from "@/lib/i18n";
 import { useHydrated } from "@/lib/use-hydrated";
@@ -52,7 +50,6 @@ function MapPage() {
   const dams = useMemo(() => feeds.flatMap((f) => f.dams), [feeds]);
   const mapped = dams.filter((d) => d.latitude !== null && d.longitude !== null).length;
   const refreshing = hydrated && results.some((r) => r.isFetching);
-  const oldestFetch = feeds.length ? Math.min(...feeds.map((f) => f.fetchedAt)) : null;
 
   return (
     <div className="min-h-screen bg-background pb-16">
