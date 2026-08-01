@@ -1,7 +1,9 @@
 import { fmt, formatAge, type Dam } from "@/lib/dams";
 import { useLang } from "@/lib/i18n";
+import { damShareText } from "@/lib/share";
 import { cn } from "@/lib/utils";
 import { AlertBadge, DamLink, NoCurrentData, SourceLink, StaleBadge } from "./bits";
+import { ShareButton } from "./ShareButton";
 
 export function DamCard({ dam }: { dam: Dam }) {
   const { tr, lang } = useLang();
@@ -66,9 +68,17 @@ export function DamCard({ dam }: { dam: Dam }) {
             <p className={cn("text-xs text-muted-foreground", ml && "ml")}>
               {ml ? age.ml : age.en} ({dam.readingDateLabel ?? "—"})
             </p>
-            <SourceLink dam={dam} />
+            <div className="flex items-center gap-2">
+              <ShareButton text={damShareText(dam, lang)} />
+              <SourceLink dam={dam} />
+            </div>
           </div>
         </>
+      )}
+      {dam.suppressReading && (
+        <div className="mt-3 flex justify-end">
+          <ShareButton text={damShareText(dam, lang)} />
+        </div>
       )}
     </article>
   );
