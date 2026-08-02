@@ -15,6 +15,7 @@ import { LanguageProvider } from "../lib/i18n";
 import { SiteFooter } from "../components/dam/SiteFooter";
 import { AlertMarquee } from "../components/dam/AlertMarquee";
 import { ScrollToTop } from "../components/dam/ScrollToTop";
+import { ThemeProvider, themeInitScript } from "../lib/theme";
 
 function NotFoundComponent() {
   return (
@@ -119,6 +120,7 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <HeadContent />
       </head>
       <body>
@@ -134,13 +136,15 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <AlertMarquee />
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-        <SiteFooter />
-        <ScrollToTop />
-      </LanguageProvider>
+      <ThemeProvider>
+        <LanguageProvider>
+          <AlertMarquee />
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+          <SiteFooter />
+          <ScrollToTop />
+        </LanguageProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
