@@ -155,6 +155,8 @@ function DamBody({ dam }: { dam: Dam }) {
         </>
       )}
 
+      <OperatorSection dam={dam} />
+
       <section className="rounded-xl border border-border bg-card p-4">
         <h2 className={cn("text-sm font-semibold", isMl && "ml")}>{tr("Details", "വിവരങ്ങൾ")}</h2>
         <dl className="mt-2 grid gap-x-6 sm:grid-cols-2">
@@ -217,7 +219,14 @@ function DamBody({ dam }: { dam: Dam }) {
             </span>
           </p>
         ) : (
-          <div className="mt-3 h-64 w-full">
+          <>
+            <p className={cn("mt-1 text-xs text-muted-foreground", isMl && "ml")}>
+              {tr(
+                "Tap or hover a point for the exact value and reading time.",
+                "കൃത്യമായ വിവരവും സമയവും കാണാൻ ഗ്രാഫിൽ ടാപ്പ് ചെയ്യുക.",
+              )}
+            </p>
+            <div className="mt-3 h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 8, right: 12, bottom: 0, left: -12 }}>
                 <CartesianGrid stroke="var(--border)" vertical={false} />
@@ -273,7 +282,8 @@ function DamBody({ dam }: { dam: Dam }) {
                 />
               </LineChart>
             </ResponsiveContainer>
-          </div>
+            </div>
+          </>
         )}
       </section>
 
