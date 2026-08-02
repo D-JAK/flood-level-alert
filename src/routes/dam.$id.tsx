@@ -363,6 +363,54 @@ function DamBody({ dam }: { dam: Dam }) {
   );
 }
 
+/** Who runs the dam and where it sits — shown on every dam detail page. */
+function OperatorSection({ dam }: { dam: Dam }) {
+  const { tr, lang } = useLang();
+  const ml = lang === "ml";
+  const feed = FEEDS[dam.feed];
+  const operator = ml ? feed.labelMl : feed.label;
+  const operatorFull =
+    dam.feed === "kseb"
+      ? tr("Kerala State Electricity Board (KSEB)", "കേരള സ്റ്റേറ്റ് ഇലക്ട്രിസിറ്റി ബോർഡ്")
+      : tr("Kerala Water Resources / Irrigation Department", "കേരള ജലസേചന വിഭാഗം");
+  const coords =
+    dam.latitude !== null && dam.longitude !== null
+      ? `${dam.latitude.toFixed(4)}, ${dam.longitude.toFixed(4)}`
+      : null;
+
+  return (
+    <section className="rounded-xl border border-border bg-card p-4">
+      <h2 className={cn("text-sm font-semibold", ml && "ml")}>
+        {tr("Operator & location", "നിയന്ത്രണവും സ്ഥാനവും")}
+      </h2>
+      <dl className="mt-2 grid gap-x-6 sm:grid-cols-2">
+        <Row ml="നിയന്ത്രിക്കുന്നത്" en="Operated by" value={operatorFull} />
+        <Row ml="ഡാറ്റ ഫീഡ്" en="Data feed" value={operator} />
+        <Row ml="ജില്ല" en="District" value={dam.district ?? tr("Not published", "ലഭ്യമല്ല")} />
+        <Row ml="ഔദ്യോഗിക പേര്" en="Official name" value={dam.officialName || dam.name} />
+        <Row
+          ml="നിർദ്ദേശാങ്കങ്ങൾ"
+          en="Coordinates"
+          value={coords ?? tr("Not published", "ലഭ്യമല്ല")}
+        />
+      </dl>
+      {coords && (
+        <a
+          href={`https://www.google.com/maps/search/?api=1&query=${dam.latitude},${dam.longitude}`}
+          target="_blank"
+          rel="noreferrer"
+          className={cn(
+            "mt-3 inline-flex text-xs font-medium text-primary underline-offset-2 hover:underline",
+            ml && "ml",
+          )}
+        >
+          {tr("Open in Google Maps", "ഗൂഗിൾ മാപ്പിൽ തുറക്കുക")}
+        </a>
+      )}
+    </section>
+  );
+}
+
 function Stat({
   label,
   value,
