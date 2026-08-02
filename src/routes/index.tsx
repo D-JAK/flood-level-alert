@@ -61,6 +61,8 @@ function Dashboard() {
   const [district, setDistrict] = useState("all");
   const [level, setLevel] = useState<AlertLevel | "all">("all");
   const [staleOnly, setStaleOnly] = useState(false);
+  const [source, setSource] = useState<"all" | "kseb" | "irrigation">("all");
+  const [sort, setSort] = useState<SortKey>("severity");
   const [autoDistrict, setAutoDistrict] = useState<string | null>(null);
 
   // On the very first visit we ask for location once. If it is granted we
@@ -119,10 +121,11 @@ function Dashboard() {
         (d) =>
           (district === "all" || damDistricts.get(d.uid) === district) &&
           (level === "all" || d.alert === level) &&
+          (source === "all" || d.feed === source) &&
           (!staleOnly || d.suppressReading || d.staleness !== "fresh") &&
           (query.trim() === "" || d.name.toLowerCase().includes(query.trim().toLowerCase())),
       ),
-    [dams, damDistricts, district, level, staleOnly, query],
+    [dams, damDistricts, district, level, source, staleOnly, query],
   );
 
   const counts = useMemo(() => {
@@ -136,10 +139,11 @@ function Dashboard() {
     return c;
   }, [dams]);
 
+  const comparator = sorters[sort];
   const critical = filtered
     .filter((d) => d.alert === "RED" || d.alert === "ORANGE")
-    .sort(bySeverity);
-  const rest = filtered.filter((d) => !(d.alert === "RED" || d.alert === "ORANGE")).sort(bySeverity);
+    .sort(comparator);
+  const rest = filtered.filter((d) => !(d.alert === "RED" || d.alert === "ORANGE")).sort(comparator);
 
   return (
     <div className="min-h-screen bg-background pb-16">
@@ -314,6 +318,28 @@ function Dashboard() {
               </option>
             ))}
           </select>
+          <select
+            value={source}
+            onChange={(e) => setSource(e.target.value as "all" | "kseb" | "irrigation")}
+            aria-label="Filter by data source"
+            className="h-9 rounded-md border border-input bg-card px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <option value="all">{tr("All sources", "എല്ലാ സ്രോതസ്സുകൾ")}</option>
+            <option value="kseb">{tr("KSEB", "കെ.എസ്.ഇ.ബി")}</option>
+            <option value="irrigation">{tr("Irrigation", "ജലസേചനം")}</option>
+          </select>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortKey)}
+            aria-label="Sort dams"
+            className="h-9 rounded-md border border-input bg-card px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:col-span-2"
+          >
+            <option value="severity">{tr("Sort: alert level", "ക്രമം: അലേർട്ട് നില")}</option>
+            <option value="storage">{tr("Sort: storage % (high → low)", "ക്രമം: സംഭരണം % (കൂടിയത് ആദ്യം)")}</option>
+            <option value="level">{tr("Sort: water level (high → low)", "ക്രമം: ജലനിരപ്പ് (കൂടിയത് ആദ്യം)")}</option>
+            <option value="spillway">{tr("Sort: spillway release", "ക്രമം: ഷട്ടർ ഒഴുക്ക്")}</option>
+            <option value="name">{tr("Sort: name (A → Z)", "ക്രമം: പേര് (A → Z)")}</option>
+          </select>
         </section>
 
         {hydrated && filtered.length > 0 && (
@@ -352,7 +378,7 @@ function Dashboard() {
                 </p>
               ) : (
                 <section aria-label="Selected dams" className="space-y-3">
-                  {[...filtered].sort(bySeverity).map((d) => (
+                  {[...filtered].sort(comparator).map((d) => (
                     <DamCard key={d.uid} dam={d} />
                   ))}
                 </section>
@@ -388,6 +414,28 @@ function bySeverity(a: Dam, b: Dam) {
   const diff = ALERT_META[b.alert].rank - ALERT_META[a.alert].rank;
   return diff !== 0 ? diff : a.name.localeCompare(b.name);
 }
+
+type SortKey = "severity" | "storage" | "level" | "spillway" | "name";
+
+/** Sorts nulls last so dams without a reading never top the list. */
+function byDesc(pick: (d: Dam) => number | null) {
+  return (a: Dam, b: Dam) => {
+    const av = pick(a);
+    const bv = pick(b);
+    if (av === null && bv === null) return a.name.localeCompare(b.name);
+    if (av === null) return 1;
+    if (bv === null) return -1;
+    return bv - av || a.name.localeCompare(b.name);
+  };
+}
+
+const sorters: Record<SortKey, (a: Dam, b: Dam) => number> = {
+  severity: bySeverity,
+  storage: byDesc((d) => (d.suppressReading ? null : d.storagePercentage)),
+  level: byDesc((d) => (d.suppressReading ? null : d.waterLevel)),
+  spillway: byDesc((d) => (d.suppressReading ? null : d.spillwayRelease)),
+  name: (a, b) => a.name.localeCompare(b.name),
+};
 
 function districtMl(name: string) {
   return KERALA_DISTRICTS.find((d) => d.name === name)?.ml ?? name;
