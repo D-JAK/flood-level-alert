@@ -17,6 +17,8 @@ import {
   YAxis,
 } from "recharts";
 import type { DamHistoryPoint } from "@/lib/dams";
+import { ChartTooltip } from "@/components/dam/ChartTooltip";
+import { FEEDS } from "@/lib/dams";
 import { feedQueryOptions, REFRESH_MS } from "@/lib/dams-query";
 import { fmt, formatAge, type Dam, type FeedResult } from "@/lib/dams";
 import { AlertBadge, DisclaimerBar, NoCurrentData, SourceLink, StaleBadge } from "@/components/dam/bits";
@@ -225,7 +227,10 @@ function DamBody({ dam }: { dam: Dam }) {
                   tick={{ fontSize: 10 }}
                   stroke="var(--muted-foreground)"
                 />
-                <Tooltip />
+                <Tooltip
+                  cursor={{ stroke: "var(--muted-foreground)", strokeDasharray: "3 3" }}
+                  content={<ChartTooltip units={{ waterLevel: " m" }} />}
+                />
                 {dam.blueLevel !== null && (
                   <ReferenceLine
                     y={dam.blueLevel}
@@ -263,7 +268,8 @@ function DamBody({ dam }: { dam: Dam }) {
                   stroke="var(--primary)"
                   strokeWidth={2}
                   dot={false}
-                  name="Water level (m)"
+                  activeDot={{ r: 4 }}
+                  name={tr("Water level", "ജലനിരപ്പ്")}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -277,7 +283,10 @@ function DamBody({ dam }: { dam: Dam }) {
             <CartesianGrid stroke="var(--border)" vertical={false} />
             <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
             <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
-            <Tooltip />
+            <Tooltip
+              cursor={{ stroke: "var(--muted-foreground)", strokeDasharray: "3 3" }}
+              content={<ChartTooltip units={{ storagePercentage: "%" }} digits={1} />}
+            />
             <Area
               type="monotone"
               dataKey="storagePercentage"
@@ -285,7 +294,8 @@ function DamBody({ dam }: { dam: Dam }) {
               fill="var(--alert-normal)"
               fillOpacity={0.18}
               strokeWidth={2}
-              name="Storage (%)"
+              activeDot={{ r: 4 }}
+              name={tr("Storage", "സംഭരണം")}
             />
           </AreaChart>
         )}
@@ -297,14 +307,20 @@ function DamBody({ dam }: { dam: Dam }) {
             <CartesianGrid stroke="var(--border)" vertical={false} />
             <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
             <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
-            <Tooltip />
+            <Tooltip
+              cursor={{ stroke: "var(--muted-foreground)", strokeDasharray: "3 3" }}
+              content={
+                <ChartTooltip units={{ spillwayRelease: " m³/s", totalOutflow: " m³/s" }} />
+              }
+            />
             <Line
               type="monotone"
               dataKey="spillwayRelease"
               stroke="var(--alert-orange)"
               strokeWidth={2}
               dot={false}
-              name="Spillway (m³/s)"
+              activeDot={{ r: 4 }}
+              name={tr("Spillway", "ഷട്ടർ")}
             />
             <Line
               type="monotone"
@@ -312,7 +328,8 @@ function DamBody({ dam }: { dam: Dam }) {
               stroke="var(--alert-red)"
               strokeWidth={2}
               dot={false}
-              name="Total outflow (m³/s)"
+              activeDot={{ r: 4 }}
+              name={tr("Total outflow", "ആകെ പുറത്തേക്ക്")}
             />
           </LineChart>
         )}
@@ -324,8 +341,11 @@ function DamBody({ dam }: { dam: Dam }) {
             <CartesianGrid stroke="var(--border)" vertical={false} />
             <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
             <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
-            <Tooltip />
-            <Bar dataKey="rainfall" fill="var(--alert-blue)" name="Rainfall (mm)" />
+            <Tooltip
+              cursor={{ fill: "var(--muted)", fillOpacity: 0.4 }}
+              content={<ChartTooltip units={{ rainfall: " mm" }} digits={1} />}
+            />
+            <Bar dataKey="rainfall" fill="var(--alert-blue)" name={tr("Rainfall", "മഴ")} />
           </BarChart>
         )}
       </ChartCard>
