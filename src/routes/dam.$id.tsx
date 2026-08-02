@@ -17,6 +17,8 @@ import {
   YAxis,
 } from "recharts";
 import type { DamHistoryPoint } from "@/lib/dams";
+import { ChartTooltip } from "@/components/dam/ChartTooltip";
+import { FEEDS } from "@/lib/dams";
 import { feedQueryOptions, REFRESH_MS } from "@/lib/dams-query";
 import { fmt, formatAge, type Dam, type FeedResult } from "@/lib/dams";
 import { AlertBadge, DisclaimerBar, NoCurrentData, SourceLink, StaleBadge } from "@/components/dam/bits";
@@ -153,6 +155,8 @@ function DamBody({ dam }: { dam: Dam }) {
         </>
       )}
 
+      <OperatorSection dam={dam} />
+
       <section className="rounded-xl border border-border bg-card p-4">
         <h2 className={cn("text-sm font-semibold", isMl && "ml")}>{tr("Details", "വിവരങ്ങൾ")}</h2>
         <dl className="mt-2 grid gap-x-6 sm:grid-cols-2">
@@ -215,7 +219,14 @@ function DamBody({ dam }: { dam: Dam }) {
             </span>
           </p>
         ) : (
-          <div className="mt-3 h-64 w-full">
+          <>
+            <p className={cn("mt-1 text-xs text-muted-foreground", isMl && "ml")}>
+              {tr(
+                "Tap or hover a point for the exact value and reading time.",
+                "കൃത്യമായ വിവരവും സമയവും കാണാൻ ഗ്രാഫിൽ ടാപ്പ് ചെയ്യുക.",
+              )}
+            </p>
+            <div className="mt-3 h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 8, right: 12, bottom: 0, left: -12 }}>
                 <CartesianGrid stroke="var(--border)" vertical={false} />
@@ -225,7 +236,10 @@ function DamBody({ dam }: { dam: Dam }) {
                   tick={{ fontSize: 10 }}
                   stroke="var(--muted-foreground)"
                 />
-                <Tooltip />
+                <Tooltip
+                  cursor={{ stroke: "var(--muted-foreground)", strokeDasharray: "3 3" }}
+                  content={<ChartTooltip units={{ waterLevel: " m" }} />}
+                />
                 {dam.blueLevel !== null && (
                   <ReferenceLine
                     y={dam.blueLevel}
@@ -263,11 +277,13 @@ function DamBody({ dam }: { dam: Dam }) {
                   stroke="var(--primary)"
                   strokeWidth={2}
                   dot={false}
-                  name="Water level (m)"
+                  activeDot={{ r: 4 }}
+                  name={tr("Water level", "ജലനിരപ്പ്")}
                 />
               </LineChart>
             </ResponsiveContainer>
-          </div>
+            </div>
+          </>
         )}
       </section>
 
@@ -277,7 +293,10 @@ function DamBody({ dam }: { dam: Dam }) {
             <CartesianGrid stroke="var(--border)" vertical={false} />
             <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
             <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
-            <Tooltip />
+            <Tooltip
+              cursor={{ stroke: "var(--muted-foreground)", strokeDasharray: "3 3" }}
+              content={<ChartTooltip units={{ storagePercentage: "%" }} digits={1} />}
+            />
             <Area
               type="monotone"
               dataKey="storagePercentage"
@@ -285,7 +304,8 @@ function DamBody({ dam }: { dam: Dam }) {
               fill="var(--alert-normal)"
               fillOpacity={0.18}
               strokeWidth={2}
-              name="Storage (%)"
+              activeDot={{ r: 4 }}
+              name={tr("Storage", "സംഭരണം")}
             />
           </AreaChart>
         )}
@@ -297,14 +317,20 @@ function DamBody({ dam }: { dam: Dam }) {
             <CartesianGrid stroke="var(--border)" vertical={false} />
             <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
             <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
-            <Tooltip />
+            <Tooltip
+              cursor={{ stroke: "var(--muted-foreground)", strokeDasharray: "3 3" }}
+              content={
+                <ChartTooltip units={{ spillwayRelease: " m³/s", totalOutflow: " m³/s" }} />
+              }
+            />
             <Line
               type="monotone"
               dataKey="spillwayRelease"
               stroke="var(--alert-orange)"
               strokeWidth={2}
               dot={false}
-              name="Spillway (m³/s)"
+              activeDot={{ r: 4 }}
+              name={tr("Spillway", "ഷട്ടർ")}
             />
             <Line
               type="monotone"
@@ -312,7 +338,8 @@ function DamBody({ dam }: { dam: Dam }) {
               stroke="var(--alert-red)"
               strokeWidth={2}
               dot={false}
-              name="Total outflow (m³/s)"
+              activeDot={{ r: 4 }}
+              name={tr("Total outflow", "ആകെ പുറത്തേക്ക്")}
             />
           </LineChart>
         )}
@@ -324,12 +351,63 @@ function DamBody({ dam }: { dam: Dam }) {
             <CartesianGrid stroke="var(--border)" vertical={false} />
             <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
             <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
-            <Tooltip />
-            <Bar dataKey="rainfall" fill="var(--alert-blue)" name="Rainfall (mm)" />
+            <Tooltip
+              cursor={{ fill: "var(--muted)", fillOpacity: 0.4 }}
+              content={<ChartTooltip units={{ rainfall: " mm" }} digits={1} />}
+            />
+            <Bar dataKey="rainfall" fill="var(--alert-blue)" name={tr("Rainfall", "മഴ")} />
           </BarChart>
         )}
       </ChartCard>
     </>
+  );
+}
+
+/** Who runs the dam and where it sits — shown on every dam detail page. */
+function OperatorSection({ dam }: { dam: Dam }) {
+  const { tr, lang } = useLang();
+  const ml = lang === "ml";
+  const feed = FEEDS[dam.feed];
+  const operator = ml ? feed.labelMl : feed.label;
+  const operatorFull =
+    dam.feed === "kseb"
+      ? tr("Kerala State Electricity Board (KSEB)", "കേരള സ്റ്റേറ്റ് ഇലക്ട്രിസിറ്റി ബോർഡ്")
+      : tr("Kerala Water Resources / Irrigation Department", "കേരള ജലസേചന വിഭാഗം");
+  const coords =
+    dam.latitude !== null && dam.longitude !== null
+      ? `${dam.latitude.toFixed(4)}, ${dam.longitude.toFixed(4)}`
+      : null;
+
+  return (
+    <section className="rounded-xl border border-border bg-card p-4">
+      <h2 className={cn("text-sm font-semibold", ml && "ml")}>
+        {tr("Operator & location", "നിയന്ത്രണവും സ്ഥാനവും")}
+      </h2>
+      <dl className="mt-2 grid gap-x-6 sm:grid-cols-2">
+        <Row ml="നിയന്ത്രിക്കുന്നത്" en="Operated by" value={operatorFull} />
+        <Row ml="ഡാറ്റ ഫീഡ്" en="Data feed" value={operator} />
+        <Row ml="ജില്ല" en="District" value={dam.district ?? tr("Not published", "ലഭ്യമല്ല")} />
+        <Row ml="ഔദ്യോഗിക പേര്" en="Official name" value={dam.officialName || dam.name} />
+        <Row
+          ml="നിർദ്ദേശാങ്കങ്ങൾ"
+          en="Coordinates"
+          value={coords ?? tr("Not published", "ലഭ്യമല്ല")}
+        />
+      </dl>
+      {coords && (
+        <a
+          href={`https://www.google.com/maps/search/?api=1&query=${dam.latitude},${dam.longitude}`}
+          target="_blank"
+          rel="noreferrer"
+          className={cn(
+            "mt-3 inline-flex text-xs font-medium text-primary underline-offset-2 hover:underline",
+            ml && "ml",
+          )}
+        >
+          {tr("Open in Google Maps", "ഗൂഗിൾ മാപ്പിൽ തുറക്കുക")}
+        </a>
+      )}
+    </section>
   );
 }
 
@@ -380,12 +458,18 @@ function ChartCard({
   field: keyof DamHistoryPoint;
   children: (rows: DamHistoryPoint[]) => ReactElement;
 }) {
-  const { lang } = useLang();
+  const { tr, lang } = useLang();
   const rows = data.filter((d) => d[field] !== null);
   if (rows.length < 2) return null;
   return (
     <section className="rounded-xl border border-border bg-card p-4">
       <h2 className={cn("text-sm font-semibold", lang === "ml" && "ml")}>{title}</h2>
+      <p className={cn("mt-1 text-xs text-muted-foreground", lang === "ml" && "ml")}>
+        {tr(
+          "Tap or hover a point for the exact value and reading time.",
+          "കൃത്യമായ വിവരവും സമയവും കാണാൻ ഗ്രാഫിൽ ടാപ്പ് ചെയ്യുക.",
+        )}
+      </p>
       <div className="mt-3 h-56 w-full">
         <ResponsiveContainer width="100%" height="100%">
           {children(rows)}
