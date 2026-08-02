@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import type { ReactElement } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import {
@@ -377,7 +378,7 @@ function ChartCard({
   title: string;
   data: DamHistoryPoint[];
   field: keyof DamHistoryPoint;
-  children: (rows: DamHistoryPoint[]) => React.ReactElement;
+  children: (rows: DamHistoryPoint[]) => ReactElement;
 }) {
   const { lang } = useLang();
   const rows = data.filter((d) => d[field] !== null);
