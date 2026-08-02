@@ -458,12 +458,18 @@ function ChartCard({
   field: keyof DamHistoryPoint;
   children: (rows: DamHistoryPoint[]) => ReactElement;
 }) {
-  const { lang } = useLang();
+  const { tr, lang } = useLang();
   const rows = data.filter((d) => d[field] !== null);
   if (rows.length < 2) return null;
   return (
     <section className="rounded-xl border border-border bg-card p-4">
       <h2 className={cn("text-sm font-semibold", lang === "ml" && "ml")}>{title}</h2>
+      <p className={cn("mt-1 text-xs text-muted-foreground", lang === "ml" && "ml")}>
+        {tr(
+          "Tap or hover a point for the exact value and reading time.",
+          "കൃത്യമായ വിവരവും സമയവും കാണാൻ ഗ്രാഫിൽ ടാപ്പ് ചെയ്യുക.",
+        )}
+      </p>
       <div className="mt-3 h-56 w-full">
         <ResponsiveContainer width="100%" height="100%">
           {children(rows)}
