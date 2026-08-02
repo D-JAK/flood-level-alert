@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Droplets, Map, Navigation, PhoneCall } from "lucide-react";
 import { LanguageToggle, useLang } from "@/lib/i18n";
 import { CurrentTime } from "@/components/dam/CurrentTime";
+import { ThemeToggle } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -33,6 +34,7 @@ export function SiteNav() {
         </nav>
         <div className="flex items-center gap-2">
           <CurrentTime />
+          <ThemeToggle />
           <LanguageToggle />
         </div>
       </div>

@@ -118,8 +118,19 @@ export type Dam = {
   alert: AlertLevel;
   /** true when the reading is too old to display a number at all */
   suppressReading: boolean;
-  history: { date: Date; label: string; waterLevel: number | null }[];
+  history: DamHistoryPoint[];
   sourceUrl: string;
+};
+
+export type DamHistoryPoint = {
+  date: Date;
+  label: string;
+  waterLevel: number | null;
+  storagePercentage: number | null;
+  inflow: number | null;
+  spillwayRelease: number | null;
+  totalOutflow: number | null;
+  rainfall: number | null;
 };
 
 /** Parses "12.5", "100%", "" or undefined into a number or null. */
@@ -233,11 +244,19 @@ export function normalizeDam(raw: RawDam, feed: FeedKey, now: number): Dam {
   const history = (raw.data ?? [])
     .map((r) => {
       const date = parseFeedDate(r["date"]);
-      return date
-        ? { date, label: formatDateLabel(date)!, waterLevel: parseNum(r["waterLevel"]) }
-        : null;
+      if (!date) return null;
+      return {
+        date,
+        label: formatDateLabel(date)!,
+        waterLevel: parseNum(r["waterLevel"]),
+        storagePercentage: parseNum(r["storagePercentage"]),
+        inflow: parseNum(r["inflow"]),
+        spillwayRelease: parseNum(r["spillwayRelease"]),
+        totalOutflow: parseNum(r["totalOutflow"] ?? r["outflow"]),
+        rainfall: parseNum(r["rainfall"]),
+      };
     })
-    .filter((r): r is { date: Date; label: string; waterLevel: number | null } => r !== null)
+    .filter((r): r is DamHistoryPoint => r !== null)
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 
   return {
