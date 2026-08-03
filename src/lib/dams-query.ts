@@ -1,5 +1,13 @@
 import { queryOptions } from "@tanstack/react-query";
-import { applyKsebScrape, buildFeedResult, fetchRawFeed, type FeedKey, type FeedResult } from "./dams";
+import {
+  applyKsebScrape,
+  buildFeedResult,
+  fetchRawFeed,
+  istDayKey,
+  isCurrentBulletin,
+  type FeedKey,
+  type FeedResult,
+} from "./dams";
 import { getKsebScrape } from "./kseb.functions";
 import { readCache, writeCache } from "./local-cache";
 
@@ -13,13 +21,28 @@ import { readCache, writeCache } from "./local-cache";
 export const REFRESH_MS = 60 * 60 * 1000;
 
 /**
+ * While today's bulletin is overdue we can't sit on an hour-old check — poll
+ * every 10 minutes until the newer bulletin lands, then fall back to hourly.
+ */
+export const CATCHUP_MS = 10 * 60 * 1000;
+
+/** true when the cached payload already holds the newest bulletin that can exist */
+function hasLatestBulletin(result: FeedResult | undefined, now = Date.now()): boolean {
+  const ms = result?.lastUpdate ? new Date(result.lastUpdate).getTime() : null;
+  if (ms === null || Number.isNaN(ms)) return false;
+  return istDayKey(ms) === istDayKey(now) || isCurrentBulletin(ms, now);
+}
+
+/**
  * KSEB's public mirror sometimes stalls for days. When it does, we ask the
  * server to scrape dams.kseb.in and use that only if it is strictly newer.
  */
 async function loadFeed(feed: FeedKey): Promise<FeedResult> {
   const json = await fetchRawFeed(feed);
   const base = buildFeedResult(json, feed);
-  if (feed !== "kseb" || base.ageHours === null || base.ageHours <= 24) return base;
+  // Try the official-site scrape as soon as the mirror misses today's bulletin,
+  // instead of waiting a full day.
+  if (feed !== "kseb" || hasLatestBulletin(base)) return base;
 
   try {
     const scrape = await getKsebScrape();
@@ -42,6 +65,7 @@ async function loadFeed(feed: FeedKey): Promise<FeedResult> {
 
 export const feedQueryOptions = (feed: FeedKey) => {
   const cached = readCache<FeedResult>(`dam-feed:${feed}`);
+  const upToDate = hasLatestBulletin(cached?.data);
   return queryOptions({
     queryKey: ["dam-feed", feed],
     queryFn: async () => {
@@ -49,9 +73,11 @@ export const feedQueryOptions = (feed: FeedKey) => {
       writeCache(`dam-feed:${feed}`, result);
       return result;
     },
-    staleTime: REFRESH_MS,
+    staleTime: upToDate ? REFRESH_MS : CATCHUP_MS,
     gcTime: 7 * 24 * 60 * 60 * 1000,
-    refetchOnMount: false,
+    // When we're behind the latest bulletin, allow a mount-time catch-up fetch
+    // (staleTime still prevents repeated hits within the catch-up window).
+    refetchOnMount: !upToDate,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     retry: 1,
